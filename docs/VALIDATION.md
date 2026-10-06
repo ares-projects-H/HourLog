@@ -17,6 +17,9 @@ Package `com.hourlog.app`, code 3, Android 8+ (API 26), target/compile API 36. T
 | Actual 1.1.0 → optimized 1.2.0 installation | Passed without uninstall; seeded entries, settings and the same scheduled work ID preserved |
 | Actual reboot after upgrade | Independent Java ReleaseProbe passed |
 | Signature | Matches the original published APK certificate |
+| GitHub Actions | Source release commit passed unit tests, lint and debug/release builds |
+| Public update client | 2 additional tests passed against published 1.2.0: current-version detection and actual APK download/checksum verification before same-version rejection |
+| Public asset readback | GitHub-downloaded APK matches published SHA256SUMS and the original certificate |
 
 The upgrade baseline was seeded on the actual 1.1.0 debug APK in an isolated emulator, then replaced with the signed optimized 1.2.0 APK using `adb install -r`. The framework-only `ReleaseProbe` verified stored entries, settings and scheduled work before and after reboot. Local evidence is in ignored `artifacts/v1.2.0/qa/`.
 
