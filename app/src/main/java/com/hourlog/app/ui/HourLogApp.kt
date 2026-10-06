@@ -37,16 +37,7 @@ import java.time.LocalDate
         if (weekRequest > 0) { tab = 1; settings = false; weekString = TimeCalculator.monday(LocalDate.now()).toString() }
     }
     val dark = when (state.preferences.appearance) { Appearance.SYSTEM -> isSystemInDarkTheme(); Appearance.DARK -> true; Appearance.LIGHT -> false }
-    val colors = if (dark) darkColorScheme(primary = Color(0xff8ed8c8), secondary = Color(0xffb4cbc4),
-        primaryContainer = Color(0xff1d4e44), onPrimaryContainer = Color(0xffc5f0e2),
-        secondaryContainer = Color(0xff30483f), onSecondaryContainer = Color(0xffd1e8dc),
-        surface = Color(0xff101915), background = Color(0xff101915),
-        surfaceContainer = Color(0xff19241e), surfaceContainerHighest = Color(0xff28372f))
-        else lightColorScheme(primary = Color(0xff185b50), secondary = Color(0xff4d635c),
-            primaryContainer = Color(0xffccebe2), onPrimaryContainer = Color(0xff123d32),
-            secondaryContainer = Color(0xffdfede6), onSecondaryContainer = Color(0xff16372d),
-            surface = Color(0xfff8faf7), background = Color(0xfff8faf7),
-            surfaceContainer = Color(0xffedf3ef), surfaceContainerHighest = Color(0xffe5ede7))
+    val colors = hourLogColors(state.preferences.colorSeed, dark)
     MaterialTheme(colorScheme = colors) {
         Scaffold(topBar = {
             TopAppBar(title = { Text(stringResource(if (settings) R.string.settings else R.string.app_name)) },

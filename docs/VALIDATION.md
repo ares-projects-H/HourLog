@@ -1,4 +1,43 @@
-# Delivery validation — 2026-10-06
+# HourLog 1.1.0 validation — 2026-10-06
+
+Package `com.hourlog.app`, code 2, Android 8+ (API 26), target/compile API 36. Optimized signed APK preserves the original certificate so it replaces the initially installed 1.0.0 debug APK.
+
+| Check | Result |
+|---|---|
+| Debug/release compilation and R8 | Passed |
+| JVM suite | 64 tests passed, zero failures |
+| Main Android suite | 22 tests passed on Android 16 ARM64 emulator |
+| APK version/certificate validation | 4 additional tests passed: accept higher version with same certificate; reject another certificate, downgrade, invalid archive |
+| System authentication | 1 additional test passed using the actual Android phone-PIN confirmation dialog |
+| Custom PIN/password | Keystore encryption, credential verification, persistent retry cooldown and changes requiring old credential passed |
+| App gate | Hidden content, wrong PIN, correct PIN, Activity recreation and FLAG_SECURE passed |
+| Export/import | Real ContentResolver file save/read, preview, cancel, full restore and invalid-input preservation passed |
+| Adaptive icon | Full green background verified and raster rendered/visually reviewed |
+| Legacy backup | Old preferences without color field default to original green |
+| Lint | Zero errors; dependency/style advisories remain |
+| Actual 1.0.0 → optimized 1.1.0 installation | Passed without uninstall; entries, preferences and same scheduled work ID preserved |
+| Actual reboot of optimized release | Java framework probe passed after emulator reboot; application launched and 10:30 synthetic total was visually reviewed |
+| APK certificates | SHA-256 certificate fingerprints match initial APK |
+
+The baseline is seeded with `LifecycleDeviceTest#prepareRebootFixture`, verified on 1.0.0, then upgraded with `adb install -r` to the optimized release. Debug instrumentation cannot load renamed Kotlin internals in an R8 release; the independent Java `ReleaseProbe` uses Android APIs to check the private SQLite entries, stored settings and WorkManager ID without depending on renamed classes.
+
+```sh
+./gradlew -PhourlogTestRunner=com.hourlog.app.ReleaseProbe :app:assembleDebugAndroidTest
+adb -s emulator-5556 install -r app/build/outputs/apk/androidTest/debug/app-debug-androidTest.apk
+adb -s emulator-5556 shell am instrument -w com.hourlog.app.test/com.hourlog.app.ReleaseProbe
+# Reset the runner for ordinary debug tests:
+./gradlew :app:assembleDebugAndroidTest
+```
+
+`UpdateNetworkDeviceTest` is opt-in with instrumentation argument `networkUpdateTests=true`; it checks the public stable release API and downloads the published APK through the actual client, verifying SHA-256 before rejecting the already installed version. APK fixture tests require local code-3 files and do not publish those fixtures. Phone credential tests require a configured test-device credential and actual system confirmation.
+
+Local evidence is in ignored `artifacts/v1.1.0/qa/`. The distributed APK is `artifacts/v1.1.0/HourLog-v1.1.0.apk`; `SHA256SUMS` covers it. No signing key or user backup is uploaded. Published builds retain the original development certificate for update continuity; CI-generated debug APKs are not release updates.
+
+A physical phone's fingerprint sensor, manufacturer restrictions and all external document providers were not exercised. Biometric availability comes from Android; the phone-credential path was tested on the emulator. App lock controls UI access and protected captures; Room is in private Android storage, without separate database encryption. Manual exports are plain documents. Update checking/downloading uses Internet only when requested; the app transmits no work/salary data. Android confirms installation.
+
+---
+
+# Initial 1.0.0 validation — 2026-10-06
 
 Identity: **HourLog**, application ID `com.hourlog.app`, version 1.0.0 (code 1), min SDK 26, target/compile SDK 36.
 

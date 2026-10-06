@@ -35,6 +35,7 @@ val dayChoices = listOf(1 to R.string.monday, 2 to R.string.tuesday, 3 to R.stri
     var threshold by rememberSaveable(p.overtimeThresholdMinutes) { mutableStateOf(BigDecimal(p.overtimeThresholdMinutes).divide(BigDecimal(60), 8, java.math.RoundingMode.HALF_UP).stripTrailingZeros().toPlainString()) }
     var multiplier by rememberSaveable(p.overtimeMultiplier) { mutableStateOf(p.overtimeMultiplier.toPlainString()) }
     var appearance by remember(p.appearance) { mutableStateOf(p.appearance) }
+    var colorSeed by rememberSaveable(p.colorSeed) { mutableStateOf(p.colorSeed) }
     var format by remember(p.hourFormat) { mutableStateOf(p.hourFormat) }
     var defaultBreak by remember(p.defaultBreak) { mutableStateOf(p.defaultBreak) }
     var enabled by rememberSaveable(p.reminderEnabled) { mutableStateOf(p.reminderEnabled) }
@@ -47,11 +48,20 @@ val dayChoices = listOf(1 to R.string.monday, 2 to R.string.tuesday, 3 to R.stri
     var rangeKind by remember { mutableStateOf<ExportKind?>(null) }
     val context = LocalContext.current
     val permission = rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) { granted -> denied = !granted }
-    val openBackup = rememberLauncherForActivityResult(ActivityResultContracts.OpenDocument()) { uri -> uri?.let(vm::readBackup) }
+
     LazyColumn(Modifier.fillMaxSize(), contentPadding = PaddingValues(20.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
         item { Text(stringResource(R.string.appearance), style = MaterialTheme.typography.titleLarge) }
         item { Choice(stringResource(R.string.appearance), appearance,
             listOf(Appearance.SYSTEM to R.string.system_theme, Appearance.LIGHT to R.string.light_theme, Appearance.DARK to R.string.dark_theme)) { appearance = it } }
+        item { Text(stringResource(R.string.app_colors), style = MaterialTheme.typography.titleMedium) }
+        item { Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+            listOf("185B50","2459A6","7841A0","AF3C57","9A531A").forEach { seed ->
+                Box(Modifier.weight(1f)) { FilterChip(selected = colorSeed.equals(seed,true),onClick = { colorSeed = seed },
+                    label = { Text("●", color = androidx.compose.ui.graphics.Color(android.graphics.Color.parseColor("#$seed"))) }) }
+            }
+        } }
+        item { OutlinedTextField(colorSeed, { if(it.length <= 6) colorSeed = it.uppercase(Locale.ROOT) }, Modifier.fillMaxWidth(), label = { Text(stringResource(R.string.custom_color)) },singleLine = true) }
+        item { TextButton(onClick = { colorSeed = "185B50" }) { Text(stringResource(R.string.default_colors)) } }
         item { Choice(stringResource(R.string.hours), format,
             listOf(HourFormat.HOURS_MINUTES to R.string.hours_minutes, HourFormat.DECIMAL to R.string.decimal)) { format = it } }
         item { Choice(stringResource(R.string.default_break), defaultBreak,
@@ -82,7 +92,7 @@ val dayChoices = listOf(1 to R.string.monday, 2 to R.string.tuesday, 3 to R.stri
                     else throw IllegalArgumentException()
                 val updated = p.copy(hourlyRate = decimal(rate), currency = currency.trim(), overtimeThresholdMinutes = minuteThreshold,
                     overtimeMultiplier = decimal(multiplier), appearance = appearance, hourFormat = format, defaultBreak = defaultBreak,
-                    reminderEnabled = enabled, reminderDay = reminderDay, reminderHour = hour, reminderMinute = minute)
+                    reminderEnabled = enabled, reminderDay = reminderDay, reminderHour = hour, reminderMinute = minute, colorSeed = colorSeed)
                 updated.validate(); error = false
                 vm.settings(updated) {
                     if (enabled && Build.VERSION.SDK_INT >= 33 && ContextCompat.checkSelfPermission(context, Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED)
@@ -91,12 +101,14 @@ val dayChoices = listOf(1 to R.string.monday, 2 to R.string.tuesday, 3 to R.stri
                 }
             } catch (e: Exception) { error = true }
         }) { Text(stringResource(R.string.save)) } }
+        item { HorizontalDivider(); SecuritySettingsSection() }
+        item { HorizontalDivider(); UpdateSection() }
         item { HorizontalDivider(); Text(stringResource(R.string.data), style = MaterialTheme.typography.titleLarge) }
         item { OutlinedButton(enabled = !busy, onClick = { rangeKind = ExportKind.PERIODS }, modifier = Modifier.fillMaxWidth()) { Text(stringResource(R.string.export_csv)) } }
         item { OutlinedButton(enabled = !busy, onClick = { rangeKind = ExportKind.WEEKS }, modifier = Modifier.fillMaxWidth()) { Text(stringResource(R.string.export_weekly)) } }
         item { OutlinedButton(enabled = !busy, onClick = { rangeKind = ExportKind.PDF }, modifier = Modifier.fillMaxWidth()) { Text(stringResource(R.string.export_pdf)) } }
         item { OutlinedButton(enabled = !busy, onClick = { vm.export(ExportKind.BACKUP, LocalDate.now(), LocalDate.now()) }, modifier = Modifier.fillMaxWidth()) { Text(stringResource(R.string.backup)) } }
-        item { OutlinedButton(enabled = !busy, onClick = { openBackup.launch(arrayOf("application/json", "application/octet-stream", "text/plain")) }, modifier = Modifier.fillMaxWidth()) { Text(stringResource(R.string.restore)) } }
+        item { OutlinedButton(enabled = !busy, onClick = { (context as com.hourlog.app.MainActivity).openBackup() }, modifier = Modifier.fillMaxWidth()) { Text(stringResource(R.string.restore)) } }
         item { Text(stringResource(R.string.privacy), style = MaterialTheme.typography.bodySmall) }
     }
     if (timePicker) TimeDialog(LocalTime.of(hour, minute), { hour = it.hour; minute = it.minute }, { timePicker = false })

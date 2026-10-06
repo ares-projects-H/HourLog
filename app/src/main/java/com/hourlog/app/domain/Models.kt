@@ -20,6 +20,7 @@ data class Preferences(
     val reminderDay: Int = 5,
     val reminderHour: Int = 15,
     val reminderMinute: Int = 30,
+    val colorSeed: String = "185B50",
 ) {
     fun validate() {
         require(hourlyRate >= BigDecimal.ZERO && hourlyRate <= BigDecimal("1000000"))
@@ -29,6 +30,7 @@ data class Preferences(
         require(overtimeMultiplier >= BigDecimal.ZERO && overtimeMultiplier <= BigDecimal("100"))
         require(overtimeMultiplier.scale() <= 4)
         require(reminderDay in 1..7 && reminderHour in 0..23 && reminderMinute in 0..59)
+        require(colorSeed.matches(Regex("[0-9A-Fa-f]{6}")))
     }
 }
 

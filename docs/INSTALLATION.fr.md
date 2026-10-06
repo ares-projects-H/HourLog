@@ -4,12 +4,12 @@ Nom de l’application et du projet : **HourLog**. Package : `com.hourlog.app`. 
 
 ## Installer l’APK livré
 
-1. Transférez `HourLog-v1.0.0-debug.apk` depuis le dossier `artifacts` vers le téléphone.
+1. Téléchargez `HourLog-v1.1.0.apk` depuis [la release GitHub](https://github.com/ares-projects-H/HourLog/releases/latest), ou transférez-le depuis le dossier local `artifacts/v1.1.0`.
 2. Ouvrez le fichier et autorisez l’installation depuis votre gestionnaire de fichiers si Android le demande.
 3. Ouvrez HourLog. Dans Paramètres, saisissez votre taux horaire et vérifiez le seuil hebdomadaire, le multiplicateur et la devise.
 4. Activez le rappel et enregistrez les paramètres pour accorder la permission de notification.
 
-L’APK debug utilise une signature de développement. Pour distribuer publiquement l’application, utilisez votre propre clé de signature release.
+L’APK publié est optimisé et conserve la signature de développement initiale : il peut remplacer la version 1.0.0 déjà installée sans désinstallation. Conservez la même clé pour les futures versions. Une nouvelle clé nécessite une migration ou une nouvelle installation.
 
 ## Compiler sur ce Mac
 
@@ -57,3 +57,25 @@ adb install -r app/build/outputs/apk/debug/app-debug.apk
 - Fermez puis rouvrez l’application : les entrées doivent rester présentes.
 - Exportez CSV et PDF, sauvegardez JSON, puis contrôlez la prévisualisation avant toute restauration.
 - Vérifiez les notifications après un redémarrage réel. Android peut retarder le rappel selon l’économie de batterie ; il ne s’agit pas d’une alarme exacte.
+
+## Protection et couleurs
+
+Dans **Paramètres → Protection**, choisissez le code PIN personnel (6–12 chiffres), un mot de passe (8–128 caractères), ou l’authentification du téléphone. Sur Android 11 et plus, la biométrie est proposée par Android si elle est disponible et enregistrée ; le code/schéma/mot de passe du téléphone reste utilisable. Sur Android 8–10, utilisez le code du téléphone. L’application ne connaît jamais le code du téléphone ni vos empreintes.
+
+Vous pouvez permettre l’authentification du téléphone en secours du code personnel. Conservez votre code : il n’existe pas de réinitialisation distante. Les sauvegardes d’heures n’incluent pas le verrou et ne le désactivent pas lors d’une restauration. Les fichiers exportés ne sont pas chiffrés. Le verrou protège l’accès à l’interface ; la base reste dans le stockage privé Android.
+
+Choisissez le verrouillage immédiat, après 30 secondes ou après deux minutes en arrière-plan. Un démarrage à froid est toujours verrouillé. Les captures sont bloquées quand la protection est active et les rappels masquent les totaux.
+
+Dans **Paramètres → Couleur**, choisissez une palette ou saisissez six caractères hexadécimaux, puis **Enregistrer**. Le bouton de couleur par défaut restaure le vert d’origine. Le mode clair/sombre reste indépendant.
+
+## Mises à jour
+
+Depuis la version 1.1.0 : **Paramètres → Mises à jour → Vérifier**, puis télécharger et installer. Android peut demander d’autoriser les installations depuis HourLog ; revenez ensuite dans l’application et appuyez à nouveau sur Installer. L’installation reste confirmée par Android. Le contrôle se fait uniquement à votre demande et ne transmet aucun horaire ni salaire. Une connexion Internet est nécessaire pour contacter GitHub.
+
+Pour Obtainium, ajoutez ce dépôt :
+
+```text
+https://github.com/ares-projects-H/HourLog
+```
+
+Le raccourci intégré peut aussi l’ajouter à Obtainium si celui-ci est installé. Les futures releases conserveront le même package et doivent conserver le même certificat pour remplacer votre installation. Évitez les APK temporaires de CI : leur clé peut être différente.

@@ -12,7 +12,10 @@ Built with Kotlin, Jetpack Compose, Material 3, Room, ViewModel, DataStore and W
 - Today, Monday–Sunday week summaries, recorded-week history and a monthly calendar.
 - Copy the previous day with new IDs, validation and overlap confirmation.
 - Configurable weekly overtime threshold (initially 40 hours), multiplier (1.5×), hourly rate and ISO currency (CAD initially).
-- Hours/minutes or localized decimal display, light/dark/system appearance.
+- Hours/minutes or localized decimal display, light/dark/system appearance, five accent presets and custom hex colors.
+- Optional custom PIN/password or system biometric/device credential lock, background timeout and protected screen capture.
+- Manual GitHub update checking, verified APK downloads and Android installation confirmation; Obtainium shortcut.
+- Adaptive launcher icon with a full green background.
 - Optional weekly reminder, initially Friday 15:30, opening the current week.
 - Detailed CSV, weekly CSV and paginated PDF for a week, several weeks or any date range.
 - Android document picker for saving, Android share sheet for sharing, and validated/versioned JSON backup and restore.
@@ -30,7 +33,7 @@ Screenshots use synthetic data only. See [docs/screenshots](docs/screenshots) fo
 - JDK 17.
 - Android SDK platform 36 and build-tools 36.0.0, plus platform-tools for device installation.
 - Android Studio supporting Android Gradle Plugin 9.1, or the included Gradle 9.3.1 wrapper.
-- Network access for the first dependency download; the installed app needs no network.
+- Network access for the first dependency download. Recording, calculations and exports work offline; checking/downloading updates connects to GitHub only when requested.
 
 Open this folder in Android Studio. Let it create `local.properties`, or add `sdk.dir=/your/android/sdk` to that ignored file. Set `JAVA_HOME` to a JDK 17 installation when building from the terminal.
 
@@ -56,7 +59,9 @@ Unit test reports: `app/build/reports/tests/testDebugUnitTest/index.html`. Lint:
 
 ### Release signing
 
-Generate a private signing key locally, outside the repository. `keytool` asks for passwords interactively:
+**Published 1.1.x builds retain the original local development certificate to update the existing 1.0.0 installation without uninstalling or losing data.** The signing key is not in GitHub or CI. Preserve that exact key for future updates; a newly generated key cannot replace an installed APK. This distribution is development-signed, not a Play Store release.
+
+For a separate fresh installation/distribution, generate a private signing key locally, outside the repository. `keytool` asks for passwords interactively:
 
 ```sh
 keytool -genkeypair -v -keystore /secure/path/hourlog-release.jks \
@@ -108,6 +113,8 @@ WorkManager → repository snapshot → Android notification
 - `ui/`: Compose screens, Material input dialogs, ViewModel and document-picker contracts.
 - `export/`: JSON codec, CSV generation, Android `PdfDocument` reports.
 - `notifications/`: persisted WorkManager scheduling and time-zone/time-change rescheduling.
+- `security/`: device-bound credentials, cooldown and lock session.
+- `updates/`: bounded GitHub downloads, checksums, package/version/signature checks.
 
 The first Room schema is committed under `app/schemas/`. Future database changes must increment the version and supply tested migrations; destructive fallback is not enabled.
 
@@ -136,11 +143,27 @@ The merged manifest includes WorkManager’s wake-lock, network-state, foregroun
 ## Privacy
 
 - All time entries, notes and salary settings remain on the device.
-- No account, server, remote API, ads, analytics or telemetry.
-- No `INTERNET` permission.
+- No account, ads, analytics or telemetry. No work entries are uploaded by the updater.
+- `INTERNET` is used only for explicitly requested GitHub update checks/downloads. GitHub receives the connection metadata such as IP address and version User-Agent.
+- `USE_BIOMETRIC` enables Android authentication; the app never reads biometric templates or the phone PIN.
+- `REQUEST_INSTALL_PACKAGES` enables the optional update installer. Android asks for permission and installation confirmation.
 - Automatic Android app-data cloud backup is disabled.
 - Export/backup/share actions are initiated manually. The chosen document provider or sharing app decides where the resulting file goes.
 - No personal data or signing secrets belong in this repository.
+
+### App lock
+
+Choose a 6–12 digit PIN, an 8–128 character password, or Android biometric/device authentication in Settings → Protection. A custom credential can optionally use the phone credential as a fallback. Android 11+ uses the system biometric prompt; Android 8–10 uses device credential confirmation. Biometrics depend on enrolled, supported hardware. Lock immediately when leaving the app, after 30 seconds, or after two minutes; a cold process always starts locked.
+
+Custom credentials use salted PBKDF2-HMAC-SHA256 (210,000 iterations); the verifier and settings are AES-GCM encrypted with an Android Keystore key. Five wrong attempts trigger a persistent cooldown, increasing up to 15 minutes. Changes/removal require the existing credential. Protected screens block screenshots/recents captures and reminders omit totals.
+
+This protects access through the app UI. The Room database remains in Android private app storage and is **not separately encrypted by this feature**. Manual exported JSON/CSV/PDF files are plain documents and need their own protection. Lock settings and verifiers are excluded from HourLog backups; restoring time data does not disable the device lock. There is no remote reset: retain your credential, enable phone fallback if desired, and keep private backups. Clearing app data/uninstalling erases entries.
+
+### Updates and Obtainium
+
+Install [the latest APK](https://github.com/ares-projects-H/HourLog/releases/latest) over the previous version. From 1.1.0 onward use Settings → Updates → Check for updates, then download/install. Nothing checks in the background. Downloads require a matching SHA-256 from the release, the same package and signing certificate, and a higher version code. Android performs the final installation and preserves app data. Allow installation from HourLog if prompted, then tap Install again.
+
+Alternatively add `https://github.com/ares-projects-H/HourLog` to Obtainium, or use the in-app shortcut. Each stable GitHub release has one installable `HourLog-vX.Y.Z.apk` and `SHA256SUMS`. See [maintainer release instructions](docs/RELEASING.md).
 
 ## Validation
 

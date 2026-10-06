@@ -33,12 +33,14 @@ object BackupCodec {
         put("hourFormat", p.hourFormat.name); put("appearance", p.appearance.name); put("defaultBreak", p.defaultBreak.name)
         put("reminderEnabled", p.reminderEnabled); put("reminderDay", p.reminderDay)
         put("reminderHour", p.reminderHour); put("reminderMinute", p.reminderMinute)
+        put("colorSeed", p.colorSeed)
     }
     private fun readPrefs(o: JsonObject) = Preferences(
         BigDecimal(o.text("hourlyRate")), o.text("currency"), o.long("overtimeThresholdMinutes"),
         BigDecimal(o.text("overtimeMultiplier")), HourFormat.valueOf(o.text("hourFormat")),
         Appearance.valueOf(o.text("appearance")), DefaultBreak.valueOf(o.text("defaultBreak")),
         o.bool("reminderEnabled"), o.long("reminderDay").toIntExact(), o.long("reminderHour").toIntExact(), o.long("reminderMinute").toIntExact(),
+        o["colorSeed"]?.jsonPrimitive?.content ?: "185B50",
     ).also { it.validate() }
     private fun Long.toIntExact(): Int = Math.toIntExact(this)
     fun encodePreferences(p: Preferences): String = prefs(p).toString()

@@ -8,6 +8,7 @@ import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.first
 
 class HourLogApplication : Application() {
+    val security by lazy { com.hourlog.app.security.SecurityController(this) }
     val database by lazy { Room.databaseBuilder(this, HourLogDatabase::class.java, "hourlog.db").build() }
     val repository by lazy { HourRepository(database, PreferenceStore(this)) }
     override fun onCreate() {

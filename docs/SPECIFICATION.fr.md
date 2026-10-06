@@ -1163,3 +1163,9 @@ Lorsque tu rencontres une décision technique mineure non spécifiée, ne m’in
 Choisis la solution Android moderne la plus simple, robuste et maintenable.
 
 Pour une décision importante qui modifierait le comportement utilisateur, explique le choix avant de l’implémenter.
+
+## Évolution acceptée — version 1.1.0
+
+À la demande du propriétaire : icône adaptative couvrant tout le masque du lanceur, dépôt public `ares-projects-H/HourLog`, vérification manuelle des releases GitHub et installation Android après contrôle du SHA-256, du package, du certificat et du code de version, lien Obtainium, verrou optionnel par PIN/mot de passe personnel ou authentification Android, couleurs personnalisables.
+
+Cette évolution autorise explicitement Internet pour la seule recherche/téléchargement des mises à jour. La saisie, les calculs et les exports restent utilisables hors ligne, sans envoi des données d’heures. Les sauvegardes d’heures ne contiennent pas le verrou. La base de données reste dans le stockage privé Android ; le verrou contrôle l’accès à l’interface, sans ajouter de chiffrement de base.
