@@ -26,6 +26,8 @@ XLSX is deliberately omitted: UTF-8 CSV opens in Excel, Sheets, LibreOffice and 
 
 Screenshots use synthetic data only. See [docs/screenshots](docs/screenshots) for English/French and light/dark versions.
 
+<img src="docs/screenshots/icon.png" alt="HourLog adaptive launcher icon" width="100">
+
 <img src="docs/screenshots/today-fr.png" alt="HourLog Today in French" width="260"> <img src="docs/screenshots/week-dark-fr.png" alt="HourLog Week in dark mode" width="260">
 
 ## Requirements

@@ -83,6 +83,23 @@ class HourLogUiTest {
         save(); awaitCount(1)
         assertEquals(480L, runBlocking { app.repository.snapshot() }.entries.single().paidMinutes)
     }
+    @Test fun customColorSavesSurvivesRecreationAndResets() {
+        compose.onNodeWithContentDescription(text(R.string.settings)).performClick()
+        compose.onNodeWithText(text(R.string.custom_color)).performTextReplacement("7841A0")
+        compose.activityRule.scenario.recreate()
+        compose.onNodeWithText("7841A0").assertExists()
+        compose.onNode(hasScrollToIndexAction()).performScrollToNode(hasText(text(R.string.save)))
+        compose.onNodeWithText(text(R.string.save)).performClick()
+        compose.waitUntil(10000) { runBlocking { app.repository.snapshot().preferences.colorSeed == "7841A0" } }
+        compose.onNode(hasScrollToIndexAction()).performScrollToNode(hasText(text(R.string.app_colors)))
+        compose.waitForIdle()
+        val bitmap = androidx.test.platform.app.InstrumentationRegistry.getInstrumentation().uiAutomation.takeScreenshot()
+        java.io.File(app.cacheDir,"HourLog-settings-purple.png").outputStream().use { bitmap.compress(android.graphics.Bitmap.CompressFormat.PNG,100,it) }
+        compose.onNodeWithText(text(R.string.default_colors)).performScrollTo().performClick()
+        compose.onNode(hasScrollToIndexAction()).performScrollToNode(hasText(text(R.string.save)))
+        compose.onNodeWithText(text(R.string.save)).performClick()
+        compose.waitUntil(10000) { runBlocking { app.repository.snapshot().preferences.colorSeed == "185B50" } }
+    }
     @Test fun captureSyntheticScreenshots() {
         val day = LocalDate.now(); val zone = ZoneId.systemDefault()
         fun e(start: Int, minute: Int, end: Int) = WorkEntry(date = day,

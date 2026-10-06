@@ -6,18 +6,23 @@ Package `com.hourlog.app`, code 2, Android 8+ (API 26), target/compile API 36. O
 |---|---|
 | Debug/release compilation and R8 | Passed |
 | JVM suite | 64 tests passed, zero failures |
-| Main Android suite | 22 tests passed on Android 16 ARM64 emulator |
+| Main Android suite | 22 tests plus 1 custom-color UI test passed on Android 16 ARM64 emulator |
 | APK version/certificate validation | 4 additional tests passed: accept higher version with same certificate; reject another certificate, downgrade, invalid archive |
 | System authentication | 1 additional test passed using the actual Android phone-PIN confirmation dialog |
 | Custom PIN/password | Keystore encryption, credential verification, persistent retry cooldown and changes requiring old credential passed |
 | App gate | Hidden content, wrong PIN, correct PIN, Activity recreation and FLAG_SECURE passed |
 | Export/import | Real ContentResolver file save/read, preview, cancel, full restore and invalid-input preservation passed |
 | Adaptive icon | Full green background verified and raster rendered/visually reviewed |
+| Custom color UI | Persisted purple color, draft after Activity recreation and reset to default passed; screenshot reviewed |
 | Legacy backup | Old preferences without color field default to original green |
 | Lint | Zero errors; dependency/style advisories remain |
 | Actual 1.0.0 → optimized 1.1.0 installation | Passed without uninstall; entries, preferences and same scheduled work ID preserved |
 | Actual reboot of optimized release | Java framework probe passed after emulator reboot; application launched and 10:30 synthetic total was visually reviewed |
 | APK certificates | SHA-256 certificate fingerprints match initial APK |
+| Public GitHub update client | 2 tests passed against published release: current version detection and real APK download/checksum verification before same-version rejection |
+| Public asset readback | GitHub-downloaded APK SHA-256 matches published SHA256SUMS and locally verified APK |
+
+There are 30 passing feature instrumentation tests across the explicitly executed suites, plus the lifecycle seed/baseline checks and the independent optimized-release probe.
 
 The baseline is seeded with `LifecycleDeviceTest#prepareRebootFixture`, verified on 1.0.0, then upgraded with `adb install -r` to the optimized release. Debug instrumentation cannot load renamed Kotlin internals in an R8 release; the independent Java `ReleaseProbe` uses Android APIs to check the private SQLite entries, stored settings and WorkManager ID without depending on renamed classes.
 
