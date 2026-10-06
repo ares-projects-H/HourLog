@@ -4,7 +4,7 @@ Nom de l’application et du projet : **HourLog**. Package : `com.hourlog.app`. 
 
 ## Installer l’APK livré
 
-1. Téléchargez `HourLog-v1.2.1.apk` depuis [la release GitHub](https://github.com/ares-projects-H/HourLog/releases/latest), ou transférez-le depuis le dossier local `artifacts/v1.2.1`.
+1. Téléchargez `HourLog-v1.2.2.apk` depuis [la release GitHub](https://github.com/ares-projects-H/HourLog/releases/latest), ou transférez-le depuis le dossier local `artifacts/v1.2.2`.
 2. Ouvrez le fichier et autorisez l’installation depuis votre gestionnaire de fichiers si Android le demande.
 3. Ouvrez HourLog. Dans Paramètres, saisissez votre taux horaire et vérifiez le seuil hebdomadaire, le multiplicateur et la devise.
 4. Activez le rappel et enregistrez les paramètres pour accorder la permission de notification.
@@ -66,7 +66,9 @@ Vous pouvez permettre l’authentification du téléphone en secours du code per
 
 Saisissez un délai personnalisé en secondes, minutes ou heures, jusqu’à 24 heures. 0 verrouille immédiatement. Vous pouvez modifier le délai en laissant les nouveaux champs de code vides pour conserver votre PIN ou mot de passe actuel ; le code actuel reste demandé. Un démarrage à froid est toujours verrouillé. Les captures et l’aperçu sont autorisés après déverrouillage ; l’écran verrouillé et les champs de code restent protégés. Circle to Search peut ainsi accéder à l’écran sur un téléphone compatible. Les rappels masquent les totaux lorsque la protection est configurée.
 
-Dans **Paramètres → Couleur**, choisissez une palette ou saisissez six caractères hexadécimaux, puis **Enregistrer**. Le bouton de couleur par défaut restaure le vert d’origine. Le mode clair/sombre reste indépendant.
+Dans **Paramètres → Apparence**, choisissez **Clair**, **Sombre** ou **Automatique** : le changement est immédiat et enregistré automatiquement. **Automatique** suit le mode clair ou sombre du téléphone. Le thème s’applique aussi à l’écran verrouillé et aux icônes des barres Android.
+
+Pour les couleurs, choisissez une des cinq palettes nommées ou saisissez six caractères hexadécimaux, avec ou sans `#` (par exemple `#2459A6`). Toute couleur valide s’applique et s’enregistre immédiatement. Une saisie invalide conserve la dernière couleur appliquée. Le bouton de couleur par défaut restaure immédiatement le vert d’origine. Les autres réglages modifiables, comme la paie et les rappels, nécessitent toujours **Enregistrer**.
 
 ## Mises à jour
 

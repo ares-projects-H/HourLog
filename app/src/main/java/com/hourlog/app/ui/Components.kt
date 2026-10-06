@@ -57,14 +57,14 @@ fun dateLabel(date: LocalDate): String = date.format(DateTimeFormatter.ofLocaliz
         confirmButton = { TextButton(onClick = { onTime(LocalTime.of(state.hour, state.minute)); close() }) { Text(stringResource(R.string.save)) } },
         dismissButton = { TextButton(onClick = close) { Text(stringResource(R.string.cancel)) } })
 }
-@Composable fun <T> Choice(label: String, value: T, options: List<Pair<T, Int>>, onValue: (T) -> Unit) {
+@Composable fun <T> Choice(label: String, value: T, options: List<Pair<T, Int>>, enabled: Boolean = true, onValue: (T) -> Unit) {
     var expanded by remember { mutableStateOf(false) }
     Box {
-        OutlinedButton(onClick = { expanded = true }, modifier = Modifier.fillMaxWidth()) {
+        OutlinedButton(enabled = enabled, onClick = { expanded = true }, modifier = Modifier.fillMaxWidth()) {
             Text("$label: ${stringResource(options.first { it.first == value }.second)}")
         }
         DropdownMenu(expanded, onDismissRequest = { expanded = false }) {
-            options.forEach { (option, text) -> DropdownMenuItem(text = { Text(stringResource(text)) },
+            options.forEach { (option, text) -> DropdownMenuItem(enabled = enabled, text = { Text(stringResource(text)) },
                 onClick = { onValue(option); expanded = false }) }
         }
     }

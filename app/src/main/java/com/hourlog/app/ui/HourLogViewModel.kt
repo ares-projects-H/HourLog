@@ -11,6 +11,7 @@ import com.hourlog.app.export.*
 import com.hourlog.app.notifications.ReminderScheduler
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.*
+import kotlinx.coroutines.channels.Channel
 import java.io.File
 import java.time.LocalDate
 
@@ -26,6 +27,20 @@ class HourLogViewModel(application: Application) : AndroidViewModel(application)
     val busy = _busy.asStateFlow()
     private val _messages = MutableSharedFlow<Int>(extraBufferCapacity = 10)
     val messages = _messages.asSharedFlow()
+    private val appearanceChanges = Channel<Pair<Appearance?, String?>>(Channel.UNLIMITED)
+    init {
+        viewModelScope.launch {
+            for ((mode, color) in appearanceChanges) {
+                try { withContext(Dispatchers.IO) { repository.appearance(mode, color) } }
+                catch (e: CancellationException) { throw e }
+                catch (_: Exception) { _messages.emit(R.string.operation_error) }
+            }
+        }
+    }
+    fun appearance(mode: Appearance? = null, color: String? = null) {
+        appearanceChanges.trySend(mode to color)
+    }
+    override fun onCleared() { appearanceChanges.close(); super.onCleared() }
     var pendingOverlap = MutableStateFlow<List<WorkEntry>?>(null)
         private set
     var restorePreview = MutableStateFlow<Backup?>(null)
@@ -60,7 +75,7 @@ class HourLogViewModel(application: Application) : AndroidViewModel(application)
         } catch (e: IllegalArgumentException) { _messages.emit(R.string.copy_dst) }
     }
     fun settings(prefs: Preferences, onSaved: () -> Unit) = operation {
-        repository.settings(prefs)
+        repository.settings(prefs, keepAppearance = true)
         ReminderScheduler.schedule(app, prefs)
         withContext(Dispatchers.Main) { onSaved() }
         _messages.emit(R.string.settings_saved)

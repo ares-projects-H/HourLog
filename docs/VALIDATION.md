@@ -1,3 +1,35 @@
+# HourLog 1.2.2 validation — 2026-10-06
+
+Package `com.hourlog.app`, version 1.2.2/code 5. See [APPEARANCE-REVIEW-2026-10-06.md](APPEARANCE-REVIEW-2026-10-06.md) for the appearance corrections.
+
+- 80 JVM tests passed on the versioned release source; all 42 Android feature tests passed on the isolated Android 16 ARM64 emulator, including seven new appearance regressions.
+- System appearance follows actual Android light/dark changes. Explicit modes, recreation, durable preferences, automatically saved preset/custom colors, reset and invalid-input handling passed.
+- Rapid appearance changes and a concurrent general settings save preserve the latest theme/color without committing unrelated drafts. Lock-screen theme, status/navigation icon flags, actual rendered button color and sampled palette contrast passed.
+- Debug, instrumentation and optimized signed release builds passed. Android lint reported zero errors; existing dependency/style advisories remain.
+- Installation over the actual published optimized 1.2.1 APK passed without uninstall. The framework-only ReleaseProbe verified preserved entries, preferences and the same scheduled reminder ID before/after upgrade and after an actual emulator reboot.
+- The APK retains the original signing certificate: SHA-256 `bf4859e17b1670255f80d3247fc41842f976b5aee2eb493d9aa7bedd574ae5e4`.
+- The optimized delivery APK was launched and visually reviewed; selecting a purple preset applied immediately, actual System dark mode followed Android, and the purple theme survived a full process stop and cold start.
+- Delivery APK SHA-256: `e177197e5a460d832363040c6fb96aee6591502e14ce6f1cb68b4022c3a78bb9`.
+
+Release assets: `artifacts/v1.2.2/HourLog-v1.2.2.apk` and `SHA256SUMS`. Local evidence is in ignored `artifacts/v1.2.2/qa/`. Physical phone manufacturers, fingerprint hardware and Circle to Search were not exercised. Private signing material and synthetic work fixtures are excluded from delivery assets.
+
+---
+
+# Initial local appearance review — 2026-10-06
+
+This initial review used 1.2.1/code 4 before release preparation. See [APPEARANCE-REVIEW-2026-10-06.md](APPEARANCE-REVIEW-2026-10-06.md) for the corrections; the delivery version and current evidence are recorded above.
+
+- 80 JVM tests passed; 42 Android feature tests passed on the isolated Android 16 ARM64 emulator, including seven new appearance tests.
+- Actual phone-mode changes drive System appearance; explicit Light/Dark overrides, Activity recreation, durable preferences, automatic preset/custom-color saving and default-color reset passed.
+- Rapid appearance changes and a general settings save preserve the latest theme/color without prematurely committing unrelated drafts. Invalid custom colors keep the previously applied color.
+- Lock-screen theme, Android status/navigation icon flags, actual rendered button color and sampled palette text contrast passed. Synthetic light/dark/purple/lock screenshots were visually reviewed.
+- Debug, instrumentation and optimized unsigned release compilation passed. Android lint reported zero errors; existing dependency/style advisories remain.
+- No signed delivery APK, upgrade-install test or physical-device verification was performed for this local patch. No commit, push, tag or GitHub release was created.
+
+Local logs and screenshots are in ignored `artifacts/appearance-fix/qa/`. Historical release validation below applies to the previously published versions, not to a new release of this patch.
+
+---
+
 # HourLog 1.2.1 validation — 2026-10-06
 
 Package `com.hourlog.app`, version 1.2.1/code 4. See [REVIEW-2026-10-06.md](REVIEW-2026-10-06.md) for the corrections and their regression evidence.

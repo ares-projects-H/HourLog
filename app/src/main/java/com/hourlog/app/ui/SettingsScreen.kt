@@ -7,6 +7,12 @@ import android.content.pm.PackageManager
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.background
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Check
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.testTag
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.*
@@ -34,7 +40,6 @@ val dayChoices = listOf(1 to R.string.monday, 2 to R.string.tuesday, 3 to R.stri
     var currency by rememberSaveable(p.currency) { mutableStateOf(p.currency) }
     var threshold by rememberSaveable(p.overtimeThresholdMinutes) { mutableStateOf(BigDecimal(p.overtimeThresholdMinutes).divide(BigDecimal(60), 8, java.math.RoundingMode.HALF_UP).stripTrailingZeros().toPlainString()) }
     var multiplier by rememberSaveable(p.overtimeMultiplier) { mutableStateOf(p.overtimeMultiplier.toPlainString()) }
-    var appearance by rememberSaveable(p.appearance) { mutableStateOf(p.appearance) }
     var colorSeed by rememberSaveable(p.colorSeed) { mutableStateOf(p.colorSeed) }
     var format by rememberSaveable(p.hourFormat) { mutableStateOf(p.hourFormat) }
     var defaultBreak by rememberSaveable(p.defaultBreak) { mutableStateOf(p.defaultBreak) }
@@ -52,17 +57,33 @@ val dayChoices = listOf(1 to R.string.monday, 2 to R.string.tuesday, 3 to R.stri
 
     LazyColumn(Modifier.fillMaxSize(), contentPadding = PaddingValues(20.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
         item { Text(stringResource(R.string.appearance), style = MaterialTheme.typography.titleLarge) }
-        item { Choice(stringResource(R.string.appearance), appearance,
-            listOf(Appearance.SYSTEM to R.string.system_theme, Appearance.LIGHT to R.string.light_theme, Appearance.DARK to R.string.dark_theme)) { appearance = it } }
+        item { Choice(stringResource(R.string.appearance), p.appearance,
+            listOf(Appearance.SYSTEM to R.string.system_theme, Appearance.LIGHT to R.string.light_theme, Appearance.DARK to R.string.dark_theme), enabled = !busy) { vm.appearance(mode = it) } }
         item { Text(stringResource(R.string.app_colors), style = MaterialTheme.typography.titleMedium) }
-        item { Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-            listOf("185B50","2459A6","7841A0","AF3C57","9A531A").forEach { seed ->
-                Box(Modifier.weight(1f)) { FilterChip(selected = colorSeed.equals(seed,true),onClick = { colorSeed = seed },
-                    label = { Text("●", color = androidx.compose.ui.graphics.Color(android.graphics.Color.parseColor("#$seed"))) }) }
+        item { FlowRow(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+            listOf("185B50" to R.string.color_green, "2459A6" to R.string.color_blue,
+                "7841A0" to R.string.color_purple, "AF3C57" to R.string.color_rose,
+                "9A531A" to R.string.color_amber).forEach { (seed, name) ->
+                FilterChip(selected = p.colorSeed.equals(seed,true), enabled = !busy,
+                    onClick = { colorSeed = seed; vm.appearance(color = seed) },
+                    modifier = Modifier.testTag("accent-$seed"),
+                    leadingIcon = {
+                        if (p.colorSeed.equals(seed,true)) Icon(Icons.Default.Check, null, Modifier.size(18.dp))
+                        else Box(Modifier.size(16.dp).background(Color(android.graphics.Color.parseColor("#$seed")), CircleShape))
+                    }, label = { Text(stringResource(name)) })
             }
         } }
-        item { OutlinedTextField(colorSeed, { if(it.length <= 6) colorSeed = it.uppercase(Locale.ROOT) }, Modifier.fillMaxWidth(), label = { Text(stringResource(R.string.custom_color)) },singleLine = true) }
-        item { TextButton(onClick = { colorSeed = "185B50" }) { Text(stringResource(R.string.default_colors)) } }
+        item { OutlinedTextField(colorSeed, { raw ->
+                val normalized = raw.trim().removePrefix("#").uppercase(Locale.ROOT)
+                if (normalized.length <= 6) {
+                    colorSeed = normalized
+                    if (normalized.matches(Regex("[0-9A-F]{6}"))) vm.appearance(color = normalized)
+                }
+            }, Modifier.fillMaxWidth(), label = { Text(stringResource(R.string.custom_color)) }, singleLine = true,
+            enabled = !busy, isError = !colorSeed.matches(Regex("[0-9A-Fa-f]{6}")),
+            supportingText = { if (!colorSeed.matches(Regex("[0-9A-Fa-f]{6}"))) Text(stringResource(R.string.invalid_color)) }) }
+        item { TextButton(enabled = !busy, onClick = { colorSeed = "185B50"; vm.appearance(color = "185B50") }) { Text(stringResource(R.string.default_colors)) } }
+        item { Text(stringResource(R.string.appearance_auto_saved), style = MaterialTheme.typography.bodySmall) }
         item { Choice(stringResource(R.string.hours), format,
             listOf(HourFormat.HOURS_MINUTES to R.string.hours_minutes, HourFormat.DECIMAL to R.string.decimal)) { format = it } }
         item { Choice(stringResource(R.string.default_break), defaultBreak,
@@ -86,7 +107,7 @@ val dayChoices = listOf(1 to R.string.monday, 2 to R.string.tuesday, 3 to R.stri
         if (reminderMissing) item { Text(stringResource(R.string.reminder_required), color = MaterialTheme.colorScheme.error) }
         if (denied) item { Text(stringResource(R.string.notification_denied), color = MaterialTheme.colorScheme.error) }
         if (error) item { Text(stringResource(R.string.invalid_settings), color = MaterialTheme.colorScheme.error) }
-        item { Button(enabled = !busy, modifier = Modifier.fillMaxWidth(), onClick = {
+        item { Button(enabled = !busy, modifier = Modifier.fillMaxWidth().testTag("save-settings"), onClick = {
             try {
                 if (enabled && (reminderDay == 0 || hour < 0)) { reminderMissing = true; return@Button }
                 reminderMissing = false
@@ -98,8 +119,8 @@ val dayChoices = listOf(1 to R.string.monday, 2 to R.string.tuesday, 3 to R.stri
                     else if (thresholdNumber.longValueExact() == p.overtimeThresholdMinutes && requested.subtract(thresholdNumber).abs() < BigDecimal("0.000001")) p.overtimeThresholdMinutes
                     else throw IllegalArgumentException()
                 val updated = p.copy(hourlyRate = decimal(rate), currency = currency.trim(), overtimeThresholdMinutes = minuteThreshold,
-                    overtimeMultiplier = decimal(multiplier), appearance = appearance, hourFormat = format, defaultBreak = defaultBreak,
-                    reminderEnabled = enabled, reminderDay = reminderDay, reminderHour = hour, reminderMinute = minute, colorSeed = colorSeed)
+                    overtimeMultiplier = decimal(multiplier), hourFormat = format, defaultBreak = defaultBreak,
+                    reminderEnabled = enabled, reminderDay = reminderDay, reminderHour = hour, reminderMinute = minute)
                 updated.validate(); error = false
                 vm.settings(updated) {
                     if (enabled && Build.VERSION.SDK_INT >= 33 && ContextCompat.checkSelfPermission(context, Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED)

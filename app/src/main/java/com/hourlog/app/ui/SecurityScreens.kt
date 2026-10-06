@@ -21,6 +21,7 @@ import androidx.compose.ui.window.DialogProperties
 import androidx.compose.ui.window.SecureFlagPolicy
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.lifecycleScope
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.hourlog.app.R
 import com.hourlog.app.MainActivity
 import com.hourlog.app.HourLogApplication
@@ -35,10 +36,14 @@ private val lockChoices = listOf(LockMode.NONE to R.string.lock_none, LockMode.D
     val security = (activity.application as HourLogApplication).security
     val locked by security.locked.collectAsStateWithLifecycle()
     val holder = rememberSaveableStateHolder()
-    if (locked) {
-        MaterialTheme { Surface(Modifier.fillMaxSize()) { UnlockScreen(security, activity) } }
-        BackHandler { activity.moveTaskToBack(true) }
-    } else holder.SaveableStateProvider("HourLog") { HourLogApp(weekRequest) }
+    val vm: HourLogViewModel = viewModel()
+    val state by vm.state.collectAsStateWithLifecycle()
+    HourLogTheme(state.preferences) {
+        if (locked) {
+            Surface(Modifier.fillMaxSize()) { UnlockScreen(security, activity) }
+            BackHandler { activity.moveTaskToBack(true) }
+        } else holder.SaveableStateProvider("HourLog") { HourLogApp(weekRequest, vm) }
+    }
 }
 
 @Composable private fun UnlockScreen(security: SecurityController, activity: MainActivity) {

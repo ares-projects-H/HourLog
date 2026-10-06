@@ -182,4 +182,11 @@
     <string name="choose_reminder_day">Choisir un jour</string>
     <string name="choose_reminder_time">Choisir une heure</string>
     <string name="reminder_required">Choisissez le jour et l’heure du rappel avant d’enregistrer.</string>
+    <string name="color_green">Vert</string>
+    <string name="color_blue">Bleu</string>
+    <string name="color_purple">Violet</string>
+    <string name="color_rose">Rose</string>
+    <string name="color_amber">Ambre</string>
+    <string name="invalid_color">Saisissez 6 chiffres hexadécimaux (0–9, A–F), par exemple 7841A0.</string>
+    <string name="appearance_auto_saved">Le thème et les couleurs valides sont appliqués et enregistrés immédiatement. Automatique suit le mode clair ou sombre du téléphone.</string>
 </resources>

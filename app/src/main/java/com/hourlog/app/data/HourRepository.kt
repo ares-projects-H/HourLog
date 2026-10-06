@@ -20,7 +20,15 @@ class HourRepository(private val db: HourLogDatabase, private val store: Prefere
     }
 
     suspend fun snapshot(): Backup = mutex.withLock { Backup(entries = db.entries().all().map { it.domain() }, preferences = preferences.first()) }
-    suspend fun settings(prefs: Preferences) = mutex.withLock {
+    suspend fun settings(prefs: Preferences, keepAppearance: Boolean = false) = mutex.withLock {
+        val updated = if (keepAppearance) preferences.first().let { prefs.copy(appearance=it.appearance, colorSeed=it.colorSeed) } else prefs
+        persistPreferences(updated)
+    }
+    suspend fun appearance(mode: Appearance?, color: String?) = mutex.withLock {
+        val current = preferences.first()
+        persistPreferences(current.copy(appearance=mode ?: current.appearance, colorSeed=color ?: current.colorSeed))
+    }
+    private suspend fun persistPreferences(prefs: Preferences) {
         prefs.validate()
         db.entries().setRecovery(PreferenceRecovery(json = BackupCodec.encodePreferences(prefs)))
         finishPreferenceRecovery()

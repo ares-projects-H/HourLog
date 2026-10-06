@@ -12,7 +12,7 @@ Built with Kotlin, Jetpack Compose, Material 3, Room, ViewModel, DataStore and W
 - Today, Monday–Sunday week summaries, recorded-week history and a monthly calendar.
 - Copy the previous day with new IDs, validation and overlap confirmation.
 - Configurable weekly overtime threshold (initially 40 hours), multiplier (1.5×), hourly rate and ISO currency (CAD initially).
-- Hours/minutes or localized decimal display, light/dark/system appearance, five accent presets and custom hex colors.
+- Hours/minutes or localized decimal display; immediately applied and automatically saved light/dark/system appearance, five named accent presets and custom hex colors.
 - Optional custom PIN/password or system biometric/device credential lock, custom background delay, and protected capture while locked.
 - Manual GitHub update checking, verified APK downloads and Android installation confirmation; Obtainium shortcut.
 - Adaptive launcher icon with a full green background.
@@ -21,6 +21,8 @@ Built with Kotlin, Jetpack Compose, Material 3, Room, ViewModel, DataStore and W
 - Android document picker for saving, Android share sheet for sharing, and validated/versioned JSON backup and restore.
 
 XLSX is deliberately omitted: UTF-8 CSV opens in Excel, Sheets, LibreOffice and Numbers. Periodic automatic backup and a manual in-app language override are optional future extensions; all current backup/export actions are manual.
+
+In Settings, appearance and valid colors are saved as soon as you select them. **System** follows the phone’s light/dark mode; the chosen theme also covers the lock screen and Android bar icons. Custom colors accept six hexadecimal digits with or without `#`; invalid input leaves the last valid color applied. Restore default colors immediately returns to the original green. Other editable settings, such as pay and reminders, still use **Save**.
 
 ## Screenshots
 
@@ -61,7 +63,7 @@ Unit test reports: `app/build/reports/tests/testDebugUnitTest/index.html`. Lint:
 
 ### Release signing
 
-**Published 1.1.0, 1.2.0 and 1.2.1 builds retain the original local development certificate to update the existing 1.0.0 installation without uninstalling or losing data.** The signing key is not in GitHub or CI. Preserve that exact key for future updates; a newly generated key cannot replace an installed APK. This distribution is development-signed, not a Play Store release.
+**Published 1.1.0–1.2.2 builds retain the original local development certificate to update the existing 1.0.0 installation without uninstalling or losing data.** The signing key is not in GitHub or CI. Preserve that exact key for future updates; a newly generated key cannot replace an installed APK. This distribution is development-signed, not a Play Store release.
 
 For a separate fresh installation/distribution, generate a private signing key locally, outside the repository. `keytool` asks for passwords interactively:
 

@@ -179,4 +179,11 @@
     <string name="choose_reminder_day">Choose a day</string>
     <string name="choose_reminder_time">Choose a time</string>
     <string name="reminder_required">Choose the reminder day and time before saving.</string>
+    <string name="color_green">Green</string>
+    <string name="color_blue">Blue</string>
+    <string name="color_purple">Purple</string>
+    <string name="color_rose">Rose</string>
+    <string name="color_amber">Amber</string>
+    <string name="invalid_color">Enter 6 hexadecimal digits (0–9, A–F), for example 7841A0.</string>
+    <string name="appearance_auto_saved">Theme and valid colors apply immediately and are saved automatically. System follows your phone’s light or dark mode.</string>
 </resources>
