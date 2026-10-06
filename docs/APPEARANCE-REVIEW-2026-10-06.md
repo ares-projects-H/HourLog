@@ -27,3 +27,5 @@ Evidence: ignored `artifacts/appearance-fix/qa/build-final.txt`, `android-final.
 The remote repository and latest stable release were checked before preparing 1.2.2/code 5. The optimized APK preserves the original signing certificate. Installation over the actual published optimized 1.2.1 APK, without uninstalling, preserved synthetic work entries, preferences and the same scheduled reminder ID. The framework-only ReleaseProbe confirmed preservation on both versions and after an actual emulator reboot.
 
 Release assets are `HourLog-v1.2.2.apk` and `SHA256SUMS`, following [RELEASING.md](RELEASING.md). The Obtainium link and human/Codex acknowledgement remain in README. Local release evidence is in ignored `artifacts/v1.2.2/qa/`; no private signing material or user backup belongs in release assets.
+
+[HourLog 1.2.2 is published](https://github.com/ares-projects-H/HourLog/releases/tag/v1.2.2) from commit `cf4c3ca`. GitHub Actions passed; public asset checksum/certificate readback and both real update-client network tests passed. The published tag remains on the tested source commit; subsequent delivery documentation records these results.

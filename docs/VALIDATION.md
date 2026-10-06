@@ -10,6 +10,10 @@ Package `com.hourlog.app`, version 1.2.2/code 5. See [APPEARANCE-REVIEW-2026-10-
 - The APK retains the original signing certificate: SHA-256 `bf4859e17b1670255f80d3247fc41842f976b5aee2eb493d9aa7bedd574ae5e4`.
 - The optimized delivery APK was launched and visually reviewed; selecting a purple preset applied immediately, actual System dark mode followed Android, and the purple theme survived a full process stop and cold start.
 - Delivery APK SHA-256: `e177197e5a460d832363040c6fb96aee6591502e14ce6f1cb68b4022c3a78bb9`.
+- GitHub Actions passed for release source commit `cf4c3ca` (unit tests, lint, debug/release builds).
+- The code-3 update client accepted the signed code-5 APK as a newer version with the same certificate.
+- Two public-update tests passed against published 1.2.2: current-version detection and actual APK download with checksum verification before same-version rejection.
+- GitHub readback confirms [1.2.2](https://github.com/ares-projects-H/HourLog/releases/tag/v1.2.2) is the latest stable release, contains exactly the delivery APK and SHA256SUMS, and its tag points to the tested release source. The downloaded APK matches local bytes, SHA256SUMS and the original signing certificate.
 
 Release assets: `artifacts/v1.2.2/HourLog-v1.2.2.apk` and `SHA256SUMS`. Local evidence is in ignored `artifacts/v1.2.2/qa/`. Physical phone manufacturers, fingerprint hardware and Circle to Search were not exercised. Private signing material and synthetic work fixtures are excluded from delivery assets.
 
