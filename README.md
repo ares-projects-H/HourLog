@@ -165,7 +165,7 @@ This protects access through the app UI. The Room database remains in Android pr
 
 Install [the latest APK](https://github.com/ares-projects-H/HourLog/releases/latest) over the previous version. From 1.1.0 onward use Settings → Updates → Check for updates, then download/install. Nothing checks in the background. Downloads require a matching SHA-256 from the release, the same package and signing certificate, and a higher version code. Android performs the final installation and preserves app data. Allow installation from HourLog if prompted, then tap Install again.
 
-Alternatively add `https://github.com/ares-projects-H/HourLog` to Obtainium, or use the in-app shortcut. Each stable GitHub release has one installable `HourLog-vX.Y.Z.apk` and `SHA256SUMS`. See [maintainer release instructions](docs/RELEASING.md).
+Alternatively add `https://github.com/ares-projects-H/HourLog` to [Obtainium](https://github.com/ImranR98/Obtainium), or use the in-app shortcut. Each stable GitHub release has one installable `HourLog-vX.Y.Z.apk` and `SHA256SUMS`. See [maintainer release instructions](docs/RELEASING.md).
 
 ## Validation
 
@@ -178,3 +178,7 @@ Read [CONTRIBUTING.md](CONTRIBUTING.md). Preserve offline operation, exact time/
 ## License
 
 MIT. See [LICENSE](LICENSE).
+
+---
+
+Designed, tested, and maintained by a human, with substantial development assistance from OpenAI Codex.
