@@ -17,7 +17,7 @@ class DeviceAuthenticationUiTest {
     @After fun cleanup() { if(security.settings.value.mode == LockMode.DEVICE) runBlocking { security.change(LockSettings(),deviceAuthorized=true) } }
     @Test fun systemCredentialUnlocksTheActualGate() {
         Assume.assumeTrue(security.deviceAvailable)
-        runBlocking { security.change(LockSettings(LockMode.DEVICE),deviceAuthorized=true) }
+        runBlocking { security.change(LockSettings(LockMode.DEVICE,timeoutSeconds=0),deviceAuthorized=true) }
         compose.runOnIdle { security.lock() }
         compose.onNodeWithText(compose.activity.getString(R.string.device_auth)).performClick()
         compose.waitUntil(60000) { !security.locked.value }

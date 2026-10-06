@@ -7,7 +7,7 @@ import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry
 import androidx.work.WorkManager
 import androidx.work.WorkInfo
-import com.hourlog.app.domain.Preferences
+import com.hourlog.app.domain.*
 import com.hourlog.app.export.Backup
 import com.hourlog.app.notifications.ReminderScheduler
 import com.hourlog.app.ui.UpdateViewModel
@@ -72,6 +72,7 @@ class UserPreferencesUiTest {
         val p = runBlocking { app.repository.snapshot().preferences }
         assertEquals(4,p.reminderDay); assertEquals(9,p.reminderHour); assertEquals(17,p.reminderMinute)
         scroll(R.string.reminder_enabled)
+        InstrumentationRegistry.getInstrumentation().uiAutomation.waitForIdle(500,5000)
         val bitmap = InstrumentationRegistry.getInstrumentation().uiAutomation.takeScreenshot()
         java.io.File(app.cacheDir,"HourLog-reminder-v12.png").outputStream().use { bitmap.compress(android.graphics.Bitmap.CompressFormat.PNG,100,it) }
         compose.onNode(isToggleable()).performClick()
@@ -107,5 +108,46 @@ class UserPreferencesUiTest {
         compose.onNodeWithText(text(R.string.check_updates)).performClick()
         compose.onNode(isToggleable() and hasText(text(R.string.dont_show_again))).assertIsOff()
         compose.onNodeWithText(text(R.string.cancel)).performClick()
+    }
+    @Test fun unsavedChoicesSurviveRecreationAndLockThenSaveTogether() {
+        fun choose(label: Int, current: Int, next: Int) {
+            val button = text(label)+": "+text(current)
+            compose.onNode(hasScrollToIndexAction()).performScrollToNode(hasText(button))
+            compose.onNodeWithText(button).performClick()
+            compose.onNodeWithText(text(next)).performClick()
+        }
+        choose(R.string.appearance, R.string.system_theme, R.string.dark_theme)
+        choose(R.string.hours, R.string.hours_minutes, R.string.decimal)
+        choose(R.string.default_break, R.string.paid, R.string.unpaid)
+        compose.activityRule.scenario.recreate()
+        runBlocking { app.security.change(LockSettings(LockMode.PIN),"735219".toCharArray()) }
+        compose.runOnIdle { app.security.lock() }
+        compose.onNodeWithText(text(R.string.custom_pin)).performTextInput("735219")
+        compose.onNodeWithText(text(R.string.unlock)).performClick()
+        compose.waitUntil(10000) { !app.security.locked.value }
+        scroll(R.string.save); compose.onNodeWithText(text(R.string.save)).performClick()
+        compose.waitUntil(10000) { runBlocking { app.repository.snapshot().preferences.appearance == Appearance.DARK } }
+        val p = runBlocking { app.repository.snapshot().preferences }
+        assertEquals(HourFormat.DECIMAL, p.hourFormat)
+        assertEquals(DefaultBreak.UNPAID, p.defaultBreak)
+    }
+    @Test fun systemBackClosesSettingsWithoutLeavingTheApp() {
+        compose.onNodeWithContentDescription(text(R.string.close)).assertIsDisplayed()
+        compose.waitForIdle()
+        compose.activityRule.scenario.onActivity { it.onBackPressedDispatcher.onBackPressed() }
+        compose.onNodeWithText(text(R.string.add_hours)).assertExists()
+        assertFalse(compose.activity.isFinishing)
+    }
+    @Test fun reminderTimeDialogSurvivesRecreation() {
+        scroll(R.string.reminder_enabled)
+        compose.onNode(isToggleable()).performClick()
+        compose.onNodeWithText(text(R.string.choose_reminder_time)).performClick()
+        val inputs = compose.onAllNodes(hasSetTextAction() and hasAnyAncestor(isDialog()))
+        inputs[0].performTextReplacement("09"); inputs[1].performTextReplacement("17")
+        compose.activityRule.scenario.recreate()
+        compose.onNodeWithText(text(R.string.select_time)).assertExists()
+        compose.onAllNodes(hasSetTextAction() and hasAnyAncestor(isDialog()))[0].assertTextContains("09")
+        compose.onAllNodes(hasSetTextAction() and hasAnyAncestor(isDialog()))[1].assertTextContains("17")
+        compose.onNode(hasText(text(R.string.cancel)) and hasAnyAncestor(isDialog())).performClick()
     }
 }

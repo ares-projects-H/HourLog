@@ -4,7 +4,7 @@ Nom de l’application et du projet : **HourLog**. Package : `com.hourlog.app`. 
 
 ## Installer l’APK livré
 
-1. Téléchargez `HourLog-v1.2.0.apk` depuis [la release GitHub](https://github.com/ares-projects-H/HourLog/releases/latest), ou transférez-le depuis le dossier local `artifacts/v1.2.0`.
+1. Téléchargez `HourLog-v1.2.1.apk` depuis [la release GitHub](https://github.com/ares-projects-H/HourLog/releases/latest), ou transférez-le depuis le dossier local `artifacts/v1.2.1`.
 2. Ouvrez le fichier et autorisez l’installation depuis votre gestionnaire de fichiers si Android le demande.
 3. Ouvrez HourLog. Dans Paramètres, saisissez votre taux horaire et vérifiez le seuil hebdomadaire, le multiplicateur et la devise.
 4. Activez le rappel et enregistrez les paramètres pour accorder la permission de notification.

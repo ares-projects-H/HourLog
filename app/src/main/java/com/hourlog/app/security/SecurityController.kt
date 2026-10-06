@@ -25,7 +25,7 @@ private data class LockRecord(val settings: LockSettings, val salt: String = "",
 class SecurityController(private val context: Context) {
     private val prefs = context.getSharedPreferences("hourlog_device_security", Context.MODE_PRIVATE)
     private val mutex = Mutex()
-    private var record = try { read() } catch (_: Exception) { LockRecord(LockSettings(LockMode.UNAVAILABLE)) }
+    @Volatile private var record = try { read() } catch (_: Exception) { LockRecord(LockSettings(LockMode.UNAVAILABLE)) }
     private val _settings = MutableStateFlow(record.settings)
     val settings = _settings.asStateFlow()
     private val _locked = MutableStateFlow(record.settings.mode != LockMode.NONE)
@@ -74,25 +74,38 @@ class SecurityController(private val context: Context) {
         record = next
         _settings.value = next.settings
     }
-    fun onBackground() {
-        lockJob?.cancel()
-        val started = SystemClock.elapsedRealtime()
-        backgroundAt = started
+    @Synchronized fun onBackground() {
+        if (backgroundAt == null) backgroundAt = SystemClock.elapsedRealtime()
+        scheduleBackgroundLock()
+    }
+    // Called under the session monitor, including when credential work finishes on an IO thread.
+    private fun scheduleBackgroundLock() {
+        lockJob?.cancel(); lockJob = null
+        val started = backgroundAt ?: return
         if (record.settings.mode == LockMode.NONE) return
-        if (record.settings.timeoutSeconds == 0) _locked.value = true
+        val remaining = record.settings.timeoutSeconds * 1000L - (SystemClock.elapsedRealtime() - started)
+        if (remaining <= 0) _locked.value = true
         else lockJob = sessionScope.launch {
-            delay(record.settings.timeoutSeconds * 1000L)
-            if (backgroundAt == started && record.settings.mode != LockMode.NONE) _locked.value = true
+            delay(remaining)
+            synchronized(this@SecurityController) {
+                if (backgroundAt == started && record.settings.mode != LockMode.NONE) _locked.value = true
+            }
         }
     }
-    fun onForeground() {
+    @Synchronized fun onForeground() {
         lockJob?.cancel(); lockJob = null
         val elapsed = backgroundAt?.let { SystemClock.elapsedRealtime() - it }
         if (record.settings.mode != LockMode.NONE && elapsed != null && elapsed >= record.settings.timeoutSeconds * 1000L) _locked.value = true
         backgroundAt = null
     }
-    fun lock() { if (record.settings.mode != LockMode.NONE) _locked.value = true }
-    private fun unlocked() { lockJob?.cancel(); lockJob = null; backgroundAt = null; _locked.value = false }
+    @Synchronized fun lock() { if (record.settings.mode != LockMode.NONE) _locked.value = true }
+    @Synchronized private fun unlocked() {
+        // Authentication may finish after onStop. Preserve the original background deadline.
+        val elapsed = backgroundAt?.let { SystemClock.elapsedRealtime() - it }
+        _locked.value = record.settings.mode != LockMode.NONE && elapsed != null &&
+            elapsed >= record.settings.timeoutSeconds * 1000L
+        scheduleBackgroundLock()
+    }
     fun remainingSeconds(): Long = maxOf(0, (maxOf(record.blockedUntil - System.currentTimeMillis(),
         monotonicBlockedUntil - SystemClock.elapsedRealtime()) + 999) / 1000)
 

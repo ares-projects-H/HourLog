@@ -8,6 +8,13 @@ import java.time.*
 import java.math.BigDecimal
 
 class BackupAndCsvTest {
+    @Test fun weeklyCsvRoundsAccordingToSelectedCurrency() {
+        val work = entry().copy(breaks=emptyList(), end=entry().start.plusSeconds(3600))
+        val yen = CsvExporter.weekly(listOf(work), Preferences(currency="JPY", hourlyRate=BigDecimal("1234.56")), day, day)
+        val dinar = CsvExporter.weekly(listOf(work), Preferences(currency="KWD", hourlyRate=BigDecimal("1.2346")), day, day)
+        assertTrue(yen.endsWith("\"1235\"\r\n"))
+        assertTrue(dinar.endsWith("\"1.235\"\r\n"))
+    }
     private val day = LocalDate.of(2026, 10, 5)
     private fun entry(note: String = "Formation") = WorkEntry(date = day,
         start = day.atTime(6,30).toInstant(ZoneOffset.UTC), end = day.atTime(15,0).toInstant(ZoneOffset.UTC),

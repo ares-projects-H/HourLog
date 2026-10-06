@@ -61,7 +61,7 @@ Unit test reports: `app/build/reports/tests/testDebugUnitTest/index.html`. Lint:
 
 ### Release signing
 
-**Published 1.1.0 and 1.2.0 builds retain the original local development certificate to update the existing 1.0.0 installation without uninstalling or losing data.** The signing key is not in GitHub or CI. Preserve that exact key for future updates; a newly generated key cannot replace an installed APK. This distribution is development-signed, not a Play Store release.
+**Published 1.1.0, 1.2.0 and 1.2.1 builds retain the original local development certificate to update the existing 1.0.0 installation without uninstalling or losing data.** The signing key is not in GitHub or CI. Preserve that exact key for future updates; a newly generated key cannot replace an installed APK. This distribution is development-signed, not a Play Store release.
 
 For a separate fresh installation/distribution, generate a private signing key locally, outside the repository. `keytool` asks for passwords interactively:
 
@@ -96,7 +96,7 @@ Daylight saving gaps are rejected with a clear message. Repeated times offer bot
 
 Break durations cannot exceed the period. Paid breaks are included; unpaid breaks are deducted. Weekly overtime applies after the configured number of paid minutes, allocating periods in chronological order, then by ID for ties. It resets each Monday. A partial export still uses all recorded entries in the full week to determine which selected minutes are overtime.
 
-Money uses `BigDecimal`; display uses the selected ISO currency and phone locale. Currency precision follows the currency. Hourly rate and multiplier support up to four decimal places. The initial rate is zero until the user enters it. Decimal hour display rounds to two digits; internal totals remain exact. 7 h 45 displays as 7.75, not 7.45.
+Money uses `BigDecimal`; display uses the selected ISO currency and phone locale. Both display and weekly CSV gross-pay totals use the currency's fraction digits (for example, zero for JPY and three for KWD), with half-up rounding. Hourly rate and multiplier support up to four decimal places. The initial rate is zero until the user enters it. Decimal hour display rounds to two digits; internal totals remain exact. 7 h 45 displays as 7.75, not 7.45.
 
 **Pay is a configurable estimate before deductions, not a payroll rules engine. Current settings apply to every historical week.** Historical rate schedules, daily overtime, tax calculations and employer-specific legal rules are outside this version.
 

@@ -56,15 +56,22 @@ object TimeCalculator {
         }.format(decimal(minutes))
     }
 
+    fun currencyFractionDigits(prefs: Preferences): Int =
+        java.util.Currency.getInstance(prefs.currency).defaultFractionDigits.takeIf { it >= 0 } ?: 2
+
     fun money(value: BigDecimal, prefs: Preferences): String = NumberFormat.getCurrencyInstance().apply {
         currency = java.util.Currency.getInstance(prefs.currency)
+        minimumFractionDigits = currencyFractionDigits(prefs)
+        maximumFractionDigits = currencyFractionDigits(prefs)
+        roundingMode = RoundingMode.HALF_UP
     }.format(value)
 
     fun nextReminder(now: ZonedDateTime, prefs: Preferences): ZonedDateTime {
         require(prefs.hasReminderSchedule)
-        var candidate = now.toLocalDate().with(TemporalAdjusters.nextOrSame(DayOfWeek.of(prefs.reminderDay)))
-            .atTime(prefs.reminderHour, prefs.reminderMinute).atZone(now.zone)
-        if (!candidate.isAfter(now)) candidate = candidate.plusWeeks(1)
+        val date = now.toLocalDate().with(TemporalAdjusters.nextOrSame(DayOfWeek.of(prefs.reminderDay)))
+        var candidate = date.atTime(prefs.reminderHour, prefs.reminderMinute).atZone(now.zone)
+        // Resolve each occurrence from the chosen wall time; a DST gap adjustment belongs to one date only.
+        if (!candidate.isAfter(now)) candidate = date.plusWeeks(1).atTime(prefs.reminderHour, prefs.reminderMinute).atZone(now.zone)
         return candidate
     }
 

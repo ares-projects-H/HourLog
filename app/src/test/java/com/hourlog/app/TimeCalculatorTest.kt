@@ -8,6 +8,20 @@ import java.time.*
 import java.util.Locale
 
 class TimeCalculatorTest {
+    @Test fun reminderReturnsToChosenWallTimeAfterSpringGapHasPassed() {
+        val now = ZonedDateTime.of(2026, 3, 8, 4, 0, 0, 0, ZoneId.of("America/Toronto"))
+        val next = TimeCalculator.nextReminder(now, Preferences(reminderDay=7, reminderHour=2, reminderMinute=30))
+        assertEquals(LocalDate.of(2026, 3, 15), next.toLocalDate())
+        assertEquals(LocalTime.of(2, 30), next.toLocalTime())
+    }
+    @Test fun moneyUsesSelectedCurrencyFractionDigits() {
+        val previous = java.util.Locale.getDefault()
+        try {
+            java.util.Locale.setDefault(java.util.Locale.US)
+            assertTrue(TimeCalculator.money(BigDecimal("1234.56"), Preferences(currency="JPY")).endsWith("1,235"))
+            assertTrue(TimeCalculator.money(BigDecimal("1.2346"), Preferences(currency="KWD")).endsWith("1.235"))
+        } finally { java.util.Locale.setDefault(previous) }
+    }
     private val monday = LocalDate.of(2026, 10, 5)
     private val zone = ZoneId.of("America/Toronto")
     private fun entry(start: String = "06:30", end: String = "15:00", day: LocalDate = monday,

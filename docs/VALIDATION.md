@@ -1,3 +1,20 @@
+# HourLog 1.2.1 validation — 2026-10-06
+
+Package `com.hourlog.app`, version 1.2.1/code 4. See [REVIEW-2026-10-06.md](REVIEW-2026-10-06.md) for the corrections and their regression evidence.
+
+- 80 JVM tests passed on the versioned release source, including regressions first observed failing for DST reminder recurrence and currency fraction digits.
+- The maintenance review's 35 Android feature tests passed on the isolated Android 16 ARM64 emulator, including three formerly failing background-authentication cases, draft retention across recreation and lock/unlock, settings Back navigation, reminder dialog recreation, exports and restores. These fixes are unchanged in the versioned release.
+- One additional Android system-PIN test passed using the real system confirmation dialog with immediate auto-lock. The emulator's temporary credential was removed afterward.
+- Debug, optimized signed release and test-APK compilation passed; Android lint reported zero errors. Existing dependency/style advisories remain.
+- The code-3 update client accepted the signed code-4 APK as a newer version with the same certificate.
+- Installation over the actual published optimized 1.2.0 APK passed without uninstall; entries, settings and the same scheduled work ID survived installation and an actual emulator reboot. The framework-only ReleaseProbe verified both optimized versions.
+- APK certificate SHA-256 matches the original: `bf4859e17b1670255f80d3247fc41842f976b5aee2eb493d9aa7bedd574ae5e4`.
+- Capture verification covers unlocked app content and the configured reminder screen. Physical fingerprint hardware and Circle to Search were not exercised.
+
+Evidence is in ignored `artifacts/review-2026-10-06/` and `artifacts/v1.2.1/qa/`. The delivery APK is `artifacts/v1.2.1/HourLog-v1.2.1.apk`, accompanied by `SHA256SUMS`; signing material and local work-data fixtures are excluded from Git and release assets.
+
+---
+
 # HourLog 1.2.0 validation — 2026-10-06
 
 Package `com.hourlog.app`, code 3, Android 8+ (API 26), target/compile API 36. The optimized signed APK retains the original certificate.

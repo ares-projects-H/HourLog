@@ -1,5 +1,6 @@
 package com.hourlog.app.ui
 
+import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
@@ -30,6 +31,7 @@ import java.time.LocalDate
     var editId by rememberSaveable { mutableStateOf<String?>(null) }
     val edit = state.entries.find { it.id == editId }
     var adding by rememberSaveable { mutableStateOf(false) }
+    BackHandler(enabled = settings && !adding && edit == null) { settings = false }
     val snackbar = remember { SnackbarHostState() }
     val context = LocalContext.current
     LaunchedEffect(vm) { vm.messages.collect { snackbar.showSnackbar(context.getString(it)) } }

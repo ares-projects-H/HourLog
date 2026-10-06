@@ -32,7 +32,8 @@ object CsvExporter {
                 val pay = TimeCalculator.pay(regular, prefs.hourlyRate) + TimeCalculator.pay(overtime, prefs.hourlyRate, prefs.overtimeMultiplier)
                 append(row(week, week.plusDays(6), maxOf(start, week), minOf(end, week.plusDays(6)),
                     regular + overtime, regular, overtime, list.map { it.entry.date }.distinct().size,
-                    prefs.hourlyRate, prefs.overtimeMultiplier, prefs.currency, pay.setScale(2, RoundingMode.HALF_UP).toPlainString()))
+                    prefs.hourlyRate, prefs.overtimeMultiplier, prefs.currency,
+                    pay.setScale(TimeCalculator.currencyFractionDigits(prefs), RoundingMode.HALF_UP).toPlainString()))
             }
     }
 }

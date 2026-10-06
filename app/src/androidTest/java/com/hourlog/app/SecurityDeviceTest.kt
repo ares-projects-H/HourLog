@@ -66,6 +66,7 @@ class SecurityDeviceTest {
         val controller = SecurityController(testContext)
         controller.change(LockSettings(LockMode.PIN,timeoutSeconds=0),"735219".toCharArray())
         controller.onBackground(); assertTrue(controller.locked.value)
+        controller.onForeground()
         assertTrue(controller.unlock("735219".toCharArray()))
         controller.lock(); assertTrue(controller.locked.value)
     }
@@ -82,6 +83,7 @@ class SecurityDeviceTest {
         controller.change(LockSettings(LockMode.PIN,timeoutSeconds=1),"735219".toCharArray())
         controller.onBackground(); delay(1300)
         assertTrue(controller.locked.value)
+        controller.onForeground()
         assertTrue(controller.unlock("735219".toCharArray()))
         controller.onBackground(); delay(200); controller.onForeground(); delay(1100)
         assertFalse(controller.locked.value)
@@ -93,5 +95,33 @@ class SecurityDeviceTest {
         icon.setBounds(0,0,216,216); icon.draw(Canvas(bitmap))
         assertEquals(android.graphics.Color.rgb(24,91,80),(icon as AdaptiveIconDrawable).background.let { (it as android.graphics.drawable.ColorDrawable).color })
         File(app.cacheDir,"HourLog-icon.png").outputStream().use { bitmap.compress(Bitmap.CompressFormat.PNG,100,it) }
+    }
+    @Test fun authenticationFinishingInBackgroundKeepsOriginalDeadline() = runBlocking {
+        val controller = SecurityController(testContext)
+        controller.change(LockSettings(LockMode.PIN,timeoutSeconds=1),"735219".toCharArray())
+        controller.onBackground(); delay(700)
+        assertTrue(controller.unlock("735219".toCharArray()))
+        delay(500)
+        assertTrue(controller.locked.value)
+        controller.onForeground()
+        assertTrue(controller.locked.value)
+    }
+    @Test fun authenticationAfterImmediateBackgroundLockCannotRevealContent() = runBlocking {
+        val controller = SecurityController(testContext)
+        controller.change(LockSettings(LockMode.PIN,timeoutSeconds=0),"735219".toCharArray())
+        controller.onBackground()
+        assertTrue(controller.unlock("735219".toCharArray()))
+        assertTrue(controller.locked.value)
+        controller.onForeground()
+        assertTrue(controller.locked.value)
+        assertTrue(controller.unlock("735219".toCharArray()))
+        assertFalse(controller.locked.value)
+    }
+    @Test fun credentialChangeFinishingInBackgroundKeepsImmediateLock() = runBlocking {
+        val controller = SecurityController(testContext)
+        controller.change(LockSettings(LockMode.PIN,timeoutSeconds=0),"735219".toCharArray())
+        controller.onBackground()
+        controller.change(LockSettings(LockMode.PIN,timeoutSeconds=0),currentSecret="735219".toCharArray())
+        assertTrue(controller.locked.value)
     }
 }

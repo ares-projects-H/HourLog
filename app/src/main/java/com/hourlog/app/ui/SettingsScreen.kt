@@ -34,19 +34,19 @@ val dayChoices = listOf(1 to R.string.monday, 2 to R.string.tuesday, 3 to R.stri
     var currency by rememberSaveable(p.currency) { mutableStateOf(p.currency) }
     var threshold by rememberSaveable(p.overtimeThresholdMinutes) { mutableStateOf(BigDecimal(p.overtimeThresholdMinutes).divide(BigDecimal(60), 8, java.math.RoundingMode.HALF_UP).stripTrailingZeros().toPlainString()) }
     var multiplier by rememberSaveable(p.overtimeMultiplier) { mutableStateOf(p.overtimeMultiplier.toPlainString()) }
-    var appearance by remember(p.appearance) { mutableStateOf(p.appearance) }
+    var appearance by rememberSaveable(p.appearance) { mutableStateOf(p.appearance) }
     var colorSeed by rememberSaveable(p.colorSeed) { mutableStateOf(p.colorSeed) }
-    var format by remember(p.hourFormat) { mutableStateOf(p.hourFormat) }
-    var defaultBreak by remember(p.defaultBreak) { mutableStateOf(p.defaultBreak) }
+    var format by rememberSaveable(p.hourFormat) { mutableStateOf(p.hourFormat) }
+    var defaultBreak by rememberSaveable(p.defaultBreak) { mutableStateOf(p.defaultBreak) }
     var enabled by rememberSaveable(p.reminderEnabled) { mutableStateOf(p.reminderEnabled) }
     var reminderDay by rememberSaveable(p.reminderDay) { mutableIntStateOf(p.reminderDay) }
     var hour by rememberSaveable(p.reminderHour) { mutableIntStateOf(p.reminderHour) }
     var minute by rememberSaveable(p.reminderMinute) { mutableIntStateOf(p.reminderMinute) }
-    var timePicker by remember { mutableStateOf(false) }
+    var timePicker by rememberSaveable { mutableStateOf(false) }
     var error by remember { mutableStateOf(false) }
     var reminderMissing by remember { mutableStateOf(false) }
     var denied by remember { mutableStateOf(false) }
-    var rangeKind by remember { mutableStateOf<ExportKind?>(null) }
+    var rangeKind by rememberSaveable { mutableStateOf<ExportKind?>(null) }
     val context = LocalContext.current
     val permission = rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) { granted -> denied = !granted }
 
