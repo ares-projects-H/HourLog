@@ -78,13 +78,13 @@ class TimeCalculatorTest {
         assertEquals(3600L, Duration.between(a, b).seconds)
     }
     @Test fun nextFridayAndPastFriday() {
-        val p = Preferences(); val now = monday.atTime(12, 0).atZone(zone)
+        val p = Preferences(reminderDay=5,reminderHour=15,reminderMinute=30); val now = monday.atTime(12, 0).atZone(zone)
         assertEquals(monday.plusDays(4).atTime(15, 30), TimeCalculator.nextReminder(now, p).toLocalDateTime())
         assertEquals(monday.plusDays(11), TimeCalculator.nextReminder(monday.plusDays(4).atTime(16, 0).atZone(zone), p).toLocalDate())
     }
     @Test fun nextReminderAtExactTimeIsNextWeek() {
         val now = monday.plusDays(4).atTime(15, 30).atZone(zone)
-        assertEquals(now.plusWeeks(1), TimeCalculator.nextReminder(now, Preferences()))
+        assertEquals(now.plusWeeks(1), TimeCalculator.nextReminder(now, Preferences(reminderDay=5,reminderHour=15,reminderMinute=30)))
     }
     @Test fun copyDayNewIdsAndPreservedBreaks() {
         val old = entry(breaks = listOf(WorkBreak(minutes = 15, paid = true)))

@@ -17,11 +17,12 @@ data class Preferences(
     val appearance: Appearance = Appearance.SYSTEM,
     val defaultBreak: DefaultBreak = DefaultBreak.PAID,
     val reminderEnabled: Boolean = false,
-    val reminderDay: Int = 5,
-    val reminderHour: Int = 15,
-    val reminderMinute: Int = 30,
+    val reminderDay: Int = 0,
+    val reminderHour: Int = -1,
+    val reminderMinute: Int = -1,
     val colorSeed: String = "185B50",
 ) {
+    val hasReminderSchedule: Boolean get() = reminderDay in 1..7 && reminderHour in 0..23 && reminderMinute in 0..59
     fun validate() {
         require(hourlyRate >= BigDecimal.ZERO && hourlyRate <= BigDecimal("1000000"))
         require(hourlyRate.scale() <= 4)
@@ -29,7 +30,9 @@ data class Preferences(
         require(overtimeThresholdMinutes in 0..10080)
         require(overtimeMultiplier >= BigDecimal.ZERO && overtimeMultiplier <= BigDecimal("100"))
         require(overtimeMultiplier.scale() <= 4)
-        require(reminderDay in 1..7 && reminderHour in 0..23 && reminderMinute in 0..59)
+        require(reminderDay in 0..7)
+        require((reminderHour == -1 && reminderMinute == -1) || (reminderHour in 0..23 && reminderMinute in 0..59))
+        require(!reminderEnabled || hasReminderSchedule)
         require(colorSeed.matches(Regex("[0-9A-Fa-f]{6}")))
     }
 }

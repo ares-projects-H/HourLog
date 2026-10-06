@@ -10,6 +10,7 @@ import androidx.test.core.app.ApplicationProvider
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.hourlog.app.security.*
 import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.delay
 import org.junit.*
 import org.junit.Assert.*
 import org.junit.runner.RunWith
@@ -67,6 +68,23 @@ class SecurityDeviceTest {
         controller.onBackground(); assertTrue(controller.locked.value)
         assertTrue(controller.unlock("735219".toCharArray()))
         controller.lock(); assertTrue(controller.locked.value)
+    }
+    @Test fun arbitraryDelayPersistsWithoutChangingPin() = runBlocking {
+        val controller = SecurityController(testContext)
+        controller.change(LockSettings(LockMode.PIN),"735219".toCharArray())
+        controller.change(LockSettings(LockMode.PIN,timeoutSeconds=73),currentSecret="735219".toCharArray())
+        val reopened = SecurityController(testContext)
+        assertEquals(73,reopened.settings.value.timeoutSeconds)
+        assertTrue(reopened.unlock("735219".toCharArray()))
+    }
+    @Test fun backgroundTimerExpiresAndForegroundCancelsIt() = runBlocking {
+        val controller = SecurityController(testContext)
+        controller.change(LockSettings(LockMode.PIN,timeoutSeconds=1),"735219".toCharArray())
+        controller.onBackground(); delay(1300)
+        assertTrue(controller.locked.value)
+        assertTrue(controller.unlock("735219".toCharArray()))
+        controller.onBackground(); delay(200); controller.onForeground(); delay(1100)
+        assertFalse(controller.locked.value)
     }
     @Test fun adaptiveIconHasFullGreenBackground() {
         val icon = app.packageManager.getApplicationIcon(app.packageName)

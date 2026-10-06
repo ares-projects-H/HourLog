@@ -1169,3 +1169,10 @@ Pour une décision importante qui modifierait le comportement utilisateur, expli
 À la demande du propriétaire : icône adaptative couvrant tout le masque du lanceur, dépôt public `ares-projects-H/HourLog`, vérification manuelle des releases GitHub et installation Android après contrôle du SHA-256, du package, du certificat et du code de version, lien Obtainium, verrou optionnel par PIN/mot de passe personnel ou authentification Android, couleurs personnalisables.
 
 Cette évolution autorise explicitement Internet pour la seule recherche/téléchargement des mises à jour. La saisie, les calculs et les exports restent utilisables hors ligne, sans envoi des données d’heures. Les sauvegardes d’heures ne contiennent pas le verrou. La base de données reste dans le stockage privé Android ; le verrou contrôle l’accès à l’interface, sans ajouter de chiffrement de base.
+
+
+## Évolution acceptée — version 1.2.0
+
+Délai de verrouillage saisi en secondes, minutes ou heures (0 immédiat, jusqu’à 24 heures), avec maintien possible du code existant après authentification. La session expire aussi pendant le passage en arrière-plan. L’app déverrouillée autorise l’aperçu, les captures et la recherche à l’écran ; les champs d’authentification et l’écran verrouillé restent protégés.
+
+La confirmation des mises à jour comporte une case persistante « Ne plus afficher ce message », validée par Continuer et réversible dans les réglages. Les vérifications restent manuelles. Le rappel hebdomadaire n’a plus de jour ni d’heure par défaut ni de petit texte explicatif dans les paramètres : le propriétaire choisit explicitement son activation et son horaire. Les anciens rappels activés sont conservés.

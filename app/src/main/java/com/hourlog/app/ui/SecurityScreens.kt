@@ -1,6 +1,5 @@
 package com.hourlog.app.ui
 
-import android.view.WindowManager
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
@@ -11,6 +10,7 @@ import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveableStateHolder
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.Alignment
+import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.activity.compose.LocalActivity
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.KeyboardType
@@ -34,12 +34,7 @@ private val lockChoices = listOf(LockMode.NONE to R.string.lock_none, LockMode.D
     val activity = LocalActivity.current as MainActivity
     val security = (activity.application as HourLogApplication).security
     val locked by security.locked.collectAsStateWithLifecycle()
-    val settings by security.settings.collectAsStateWithLifecycle()
     val holder = rememberSaveableStateHolder()
-    LaunchedEffect(settings.mode) {
-        if (settings.mode != LockMode.NONE) activity.window.addFlags(WindowManager.LayoutParams.FLAG_SECURE)
-        else activity.window.clearFlags(WindowManager.LayoutParams.FLAG_SECURE)
-    }
     if (locked) {
         MaterialTheme { Surface(Modifier.fillMaxSize()) { UnlockScreen(security, activity) } }
         BackHandler { activity.moveTaskToBack(true) }
@@ -48,6 +43,7 @@ private val lockChoices = listOf(LockMode.NONE to R.string.lock_none, LockMode.D
 
 @Composable private fun UnlockScreen(security: SecurityController, activity: MainActivity) {
     val settings by security.settings.collectAsStateWithLifecycle()
+    val keyboard = LocalSoftwareKeyboardController.current
     var secret by remember { mutableStateOf("") } // Never save passwords in instance state.
     var busy by remember { mutableStateOf(false) }
     var error by remember { mutableStateOf(false) }
@@ -65,7 +61,10 @@ private val lockChoices = listOf(LockMode.NONE to R.string.lock_none, LockMode.D
                 busy = true
                 val input = secret.toCharArray(); secret = ""
                 activity.lifecycleScope.launch {
-                    try { error = !withContext(Dispatchers.IO) { security.unlock(input) } }
+                    try {
+                        error = !withContext(Dispatchers.IO) { security.unlock(input) }
+                        if (!error) keyboard?.hide()
+                    }
                     catch (_: Exception) { error = true }
                     finally { input.fill('\u0000'); busy = false; remaining = security.remainingSeconds() }
                 }
@@ -107,13 +106,15 @@ private val lockChoices = listOf(LockMode.NONE to R.string.lock_none, LockMode.D
     val current by security.settings.collectAsStateWithLifecycle()
     var mode by remember { mutableStateOf(current.mode) }
     var fallback by remember { mutableStateOf(current.deviceFallback) }
-    var timeout by remember { mutableIntStateOf(current.timeoutSeconds) }
+    var delayUnit by remember { mutableStateOf(LockDelay.displayUnit(current.timeoutSeconds)) }
+    var delayAmount by remember { mutableStateOf((current.timeoutSeconds / delayUnit.seconds).toString()) }
+    var timeoutError by remember { mutableStateOf(false) }
     var secret by remember { mutableStateOf("") }
     var confirmation by remember { mutableStateOf("") }
     var oldSecret by remember { mutableStateOf("") }
     var busy by remember { mutableStateOf(false) }
     var error by remember { mutableStateOf(false) }
-    fun save(deviceAuthorized: Boolean) {
+    fun save(deviceAuthorized: Boolean, timeout: Int) {
         val newInput = if (mode in listOf(LockMode.PIN,LockMode.PASSWORD)) secret.toCharArray() else charArrayOf()
         val oldInput = oldSecret.toCharArray()
         activity.lifecycleScope.launch {
@@ -133,23 +134,32 @@ private val lockChoices = listOf(LockMode.NONE to R.string.lock_none, LockMode.D
                     SecretField(secret, { if(it.length <= 128) secret = it }, R.string.new_credential,mode)
                     SecretField(confirmation, { if(it.length <= 128) confirmation = it }, R.string.confirm_credential,mode)
                     Text(stringResource(if(mode == LockMode.PIN) R.string.pin_rule else R.string.password_rule), style = MaterialTheme.typography.bodySmall)
+                    if (mode == current.mode) Text(stringResource(R.string.keep_credential), style = MaterialTheme.typography.bodySmall)
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         Text(stringResource(R.string.device_fallback),Modifier.weight(1f))
                         Switch(fallback, { fallback = it }, enabled = security.deviceAvailable)
                     }
                     Text(stringResource(R.string.lock_recovery_info), style = MaterialTheme.typography.bodySmall)
                 }
-                Choice(stringResource(R.string.auto_lock), timeout, listOf(0 to R.string.lock_immediately,30 to R.string.lock_30s,120 to R.string.lock_2min)) { timeout = it }
+                Text(stringResource(R.string.auto_lock), style = MaterialTheme.typography.titleMedium)
+                OutlinedTextField(delayAmount, { if(it.length <= 6 && it.all(Char::isDigit)) { delayAmount = it; timeoutError = false } },
+                    modifier = Modifier.fillMaxWidth(), label = { Text(stringResource(R.string.lock_delay)) }, singleLine = true,
+                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number), isError = timeoutError)
+                Choice(stringResource(R.string.delay_unit), delayUnit, listOf(DelayUnit.SECONDS to R.string.seconds_unit, DelayUnit.MINUTES to R.string.minutes_unit, DelayUnit.HOURS to R.string.hours_unit)) { delayUnit = it; timeoutError = false }
+                Text(stringResource(R.string.lock_delay_hint), style = MaterialTheme.typography.bodySmall)
+                if (timeoutError) Text(stringResource(R.string.invalid_lock_delay), color = MaterialTheme.colorScheme.error)
                 if (current.mode in listOf(LockMode.PIN,LockMode.PASSWORD)) SecretField(oldSecret, { if(it.length <= 128) oldSecret = it }, R.string.current_credential,current.mode)
                 if (mode == LockMode.DEVICE && !security.deviceAvailable) Text(stringResource(R.string.device_unavailable), color = MaterialTheme.colorScheme.error)
                 if (error) Text(stringResource(R.string.lock_change_failed), color = MaterialTheme.colorScheme.error)
                 Button(enabled = !busy, onClick = {
-                    if (mode in listOf(LockMode.PIN,LockMode.PASSWORD) && (secret != confirmation || !CredentialHasher.valid(mode, secret.toCharArray()))) { error = true; return@Button }
+                    val timeout = try { LockDelay.parse(delayAmount,delayUnit) } catch (_: IllegalArgumentException) { timeoutError = true; return@Button }
+                    val keeping = mode == current.mode && secret.isEmpty() && confirmation.isEmpty()
+                    if (mode in listOf(LockMode.PIN,LockMode.PASSWORD) && !keeping && (secret != confirmation || !CredentialHasher.valid(mode, secret.toCharArray()))) { error = true; return@Button }
                     if (mode == LockMode.DEVICE && !security.deviceAvailable) { error = true; return@Button }
                     busy = true
                     if (current.mode == LockMode.DEVICE || mode == LockMode.DEVICE || (current.mode != LockMode.NONE && oldSecret.isEmpty() && security.canUseDevice))
-                        activity.authenticateDevice { if(it) save(true) else { busy = false; error = true } }
-                    else save(false)
+                        activity.authenticateDevice { if(it) save(true,timeout) else { busy = false; error = true } }
+                    else save(false,timeout)
                 }, modifier = Modifier.fillMaxWidth()) { Text(stringResource(R.string.save)) }
                 TextButton(enabled = !busy,onClick = onDismiss,modifier = Modifier.fillMaxWidth()) { Text(stringResource(R.string.cancel)) }
             }

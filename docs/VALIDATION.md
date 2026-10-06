@@ -1,4 +1,30 @@
-# HourLog 1.1.0 validation — 2026-10-06
+# HourLog 1.2.0 validation — 2026-10-06
+
+Package `com.hourlog.app`, code 3, Android 8+ (API 26), target/compile API 36. The optimized signed APK retains the original certificate.
+
+| Check | Result |
+|---|---|
+| Debug/release compilation and R8 | Passed |
+| JVM suite | 77 tests passed, zero failures |
+| Android feature suite | 29 tests passed on Android 16 ARM64 emulator |
+| Custom lock delay | Seconds/minutes/hours parsing, limits, persistence, existing PIN preservation, background expiry and return-before-expiry passed |
+| Update notice | Checkbox persistence, rotation, subsequent dialog suppression, cancellation and re-enabling passed |
+| Unlocked captures | FLAG_SECURE cleared after authentication; real screenshot captured and reviewed; lock screen still protected |
+| Reminder selection | No initial schedule, incomplete selection rejected, chosen Thursday 09:17 persisted, disabling cancels work |
+| Legacy preferences/backups | Old disabled Friday 15:30 cleared; enabled/custom schedules preserved; explicitly selected Friday 15:30 round trip passed |
+| Export/import | Real Android document save/read and validated restore passed in the feature suite |
+| Lint | Zero errors; dependency/style advisories remain |
+| Actual 1.1.0 → optimized 1.2.0 installation | Passed without uninstall; seeded entries, settings and the same scheduled work ID preserved |
+| Actual reboot after upgrade | Independent Java ReleaseProbe passed |
+| Signature | Matches the original published APK certificate |
+
+The upgrade baseline was seeded on the actual 1.1.0 debug APK in an isolated emulator, then replaced with the signed optimized 1.2.0 APK using `adb install -r`. The framework-only `ReleaseProbe` verified stored entries, settings and scheduled work before and after reboot. Local evidence is in ignored `artifacts/v1.2.0/qa/`.
+
+Circle to Search availability depends on the phone and Google configuration; that service was not exercised on the emulator. Unlocked capture and locked-window protection were tested. WorkManager reminders remain best effort rather than exact alarms. New backups with an unconfigured reminder should be restored using 1.2.0 or newer.
+
+---
+
+# Historical HourLog 1.1.0 validation — 2026-10-06
 
 Package `com.hourlog.app`, code 2, Android 8+ (API 26), target/compile API 36. Optimized signed APK preserves the original certificate so it replaces the initially installed 1.0.0 debug APK.
 

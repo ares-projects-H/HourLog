@@ -6,6 +6,7 @@ import android.os.SystemClock
 import android.security.keystore.KeyGenParameterSpec
 import android.security.keystore.KeyProperties
 import android.util.Base64
+import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.sync.Mutex
@@ -30,6 +31,8 @@ class SecurityController(private val context: Context) {
     private val _locked = MutableStateFlow(record.settings.mode != LockMode.NONE)
     val locked = _locked.asStateFlow()
     private var backgroundAt: Long? = null
+    private val sessionScope = CoroutineScope(SupervisorJob() + Dispatchers.Main.immediate)
+    private var lockJob: Job? = null
     private var monotonicBlockedUntil = 0L
     val deviceAvailable: Boolean get() = context.getSystemService(KeyguardManager::class.java).isDeviceSecure
     val canUseDevice: Boolean get() = deviceAvailable && (record.settings.mode == LockMode.DEVICE || record.settings.deviceFallback)
@@ -54,7 +57,7 @@ class SecurityController(private val context: Context) {
         val o = Json.parseToJsonElement(cipher.doFinal(decode(parts[1])).toString(Charsets.UTF_8)).jsonObject
         val mode = LockMode.valueOf(o.getValue("mode").jsonPrimitive.content)
         val timeout = o.getValue("timeout").jsonPrimitive.int
-        require(mode != LockMode.UNAVAILABLE && timeout in listOf(0,30,120))
+        require(mode != LockMode.UNAVAILABLE && timeout in 0..LockDelay.MAX_SECONDS)
         return LockRecord(LockSettings(mode, o.getValue("deviceFallback").jsonPrimitive.boolean, timeout),
             o.getValue("salt").jsonPrimitive.content, o.getValue("hash").jsonPrimitive.content,
             o.getValue("failures").jsonPrimitive.int, o.getValue("blockedUntil").jsonPrimitive.long)
@@ -72,16 +75,24 @@ class SecurityController(private val context: Context) {
         _settings.value = next.settings
     }
     fun onBackground() {
-        backgroundAt = SystemClock.elapsedRealtime()
-        if (record.settings.mode != LockMode.NONE && record.settings.timeoutSeconds == 0) _locked.value = true
+        lockJob?.cancel()
+        val started = SystemClock.elapsedRealtime()
+        backgroundAt = started
+        if (record.settings.mode == LockMode.NONE) return
+        if (record.settings.timeoutSeconds == 0) _locked.value = true
+        else lockJob = sessionScope.launch {
+            delay(record.settings.timeoutSeconds * 1000L)
+            if (backgroundAt == started && record.settings.mode != LockMode.NONE) _locked.value = true
+        }
     }
     fun onForeground() {
+        lockJob?.cancel(); lockJob = null
         val elapsed = backgroundAt?.let { SystemClock.elapsedRealtime() - it }
         if (record.settings.mode != LockMode.NONE && elapsed != null && elapsed >= record.settings.timeoutSeconds * 1000L) _locked.value = true
         backgroundAt = null
     }
     fun lock() { if (record.settings.mode != LockMode.NONE) _locked.value = true }
-    private fun unlocked() { backgroundAt = null; _locked.value = false }
+    private fun unlocked() { lockJob?.cancel(); lockJob = null; backgroundAt = null; _locked.value = false }
     fun remainingSeconds(): Long = maxOf(0, (maxOf(record.blockedUntil - System.currentTimeMillis(),
         monotonicBlockedUntil - SystemClock.elapsedRealtime()) + 999) / 1000)
 
@@ -109,13 +120,18 @@ class SecurityController(private val context: Context) {
     }
     suspend fun change(next: LockSettings, newSecret: CharArray = charArrayOf(), currentSecret: CharArray = charArrayOf(), deviceAuthorized: Boolean = false) = mutex.withLock {
         try {
-            require(next.mode != LockMode.UNAVAILABLE && next.timeoutSeconds in listOf(0,30,120))
+            require(next.mode != LockMode.UNAVAILABLE && next.timeoutSeconds in 0..LockDelay.MAX_SECONDS)
             if (record.settings.mode != LockMode.NONE) {
                 require((deviceAuthorized && canUseDevice) ||
                     (record.settings.mode in listOf(LockMode.PIN, LockMode.PASSWORD) && checkSecret(currentSecret))) { "AUTH_REQUIRED" }
             }
             require(next.mode != LockMode.DEVICE || deviceAvailable) { "DEVICE_UNAVAILABLE" }
             require(!next.deviceFallback || deviceAvailable)
+            val keepCredential = next.mode == record.settings.mode && newSecret.isEmpty() && next.mode in listOf(LockMode.PIN, LockMode.PASSWORD)
+            if (keepCredential) {
+                write(LockRecord(next, record.salt, record.hash)); monotonicBlockedUntil = 0; unlocked()
+                return@withLock
+            }
             require(CredentialHasher.valid(next.mode, newSecret)) { "INVALID_CREDENTIAL" }
             val salt = if (next.mode in listOf(LockMode.PIN, LockMode.PASSWORD)) CredentialHasher.salt() else byteArrayOf()
             val hash = if (salt.isEmpty()) byteArrayOf() else CredentialHasher.derive(newSecret, salt)

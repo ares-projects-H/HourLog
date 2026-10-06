@@ -25,7 +25,7 @@ class LifecycleDeviceTest {
         fun period(start: LocalTime, end: LocalTime) = WorkEntry(date = day,
             start = day.atTime(start).atZone(z).toInstant(), end = day.atTime(end).atZone(z).toInstant(), zoneId = z.id)
         val backup = Backup(entries = listOf(period(LocalTime.of(6,30), LocalTime.of(15,0)), period(LocalTime.of(19,0), LocalTime.of(21,0))),
-            preferences = Preferences(hourlyRate = BigDecimal("40"), reminderEnabled = true))
+            preferences = Preferences(hourlyRate = BigDecimal("40"), reminderEnabled = true,reminderDay=5,reminderHour=9,reminderMinute=20))
         app.repository.restore(backup)
         ReminderScheduler.schedule(app, backup.preferences)
         var id: String? = null

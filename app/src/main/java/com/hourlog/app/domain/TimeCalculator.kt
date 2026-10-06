@@ -61,6 +61,7 @@ object TimeCalculator {
     }.format(value)
 
     fun nextReminder(now: ZonedDateTime, prefs: Preferences): ZonedDateTime {
+        require(prefs.hasReminderSchedule)
         var candidate = now.toLocalDate().with(TemporalAdjusters.nextOrSame(DayOfWeek.of(prefs.reminderDay)))
             .atTime(prefs.reminderHour, prefs.reminderMinute).atZone(now.zone)
         if (!candidate.isAfter(now)) candidate = candidate.plusWeeks(1)

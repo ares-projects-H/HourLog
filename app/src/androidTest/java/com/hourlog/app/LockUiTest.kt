@@ -31,5 +31,11 @@ class LockUiTest {
         compose.onNodeWithText(text(R.string.custom_pin)).performTextInput("735219")
         compose.onNodeWithText(text(R.string.unlock)).performClick()
         compose.waitUntil(10000) { compose.onAllNodesWithText(text(R.string.add_hours)).fetchSemanticsNodes().isNotEmpty() }
+        compose.runOnIdle { assertEquals(0,compose.activity.window.attributes.flags and WindowManager.LayoutParams.FLAG_SECURE) }
+        compose.waitUntil(10000) { !compose.activity.window.decorView.rootWindowInsets.isVisible(android.view.WindowInsets.Type.ime()) }
+        val bitmap = androidx.test.platform.app.InstrumentationRegistry.getInstrumentation().uiAutomation.takeScreenshot()
+        assertNotNull(bitmap)
+        assertNotEquals(android.graphics.Color.BLACK,bitmap.getPixel(bitmap.width/2,bitmap.height/2))
+        java.io.File(compose.activity.cacheDir,"HourLog-unlocked-capture.png").outputStream().use { bitmap.compress(android.graphics.Bitmap.CompressFormat.PNG,100,it) }
     }
 }

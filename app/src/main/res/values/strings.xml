@@ -79,7 +79,6 @@
     <string name="friday">Friday</string>
     <string name="saturday">Saturday</string>
     <string name="sunday">Sunday</string>
-    <string name="reminder_info">Friday at 15:30 by default. Android may delay reminders to save battery. Enable and save to request permission.</string>
     <string name="notification_channel">Weekly hours</string>
     <string name="reminder_title">Your hours summary</string>
     <string name="reminder_body">You recorded %1$s since Monday. Check that all your hours are entered.</string>
@@ -142,11 +141,8 @@
     <string name="password_rule">8–128 characters. Enter and confirm your new password.</string>
     <string name="device_fallback">Also allow biometrics / phone lock</string>
     <string name="auto_lock">Lock after leaving the app</string>
-    <string name="lock_immediately">Immediately</string>
-    <string name="lock_30s">After 30 seconds</string>
-    <string name="lock_2min">After 2 minutes</string>
     <string name="lock_now">Lock now</string>
-    <string name="lock_info">A lock hides hours and pay, blocks screenshots and hides notification totals. Lock settings stay on this device and are never included in backups.</string>
+    <string name="lock_info">The lock hides hours and pay when locked. Screenshots and screen search are allowed when unlocked; code entry stays protected. Notification totals are hidden. Lock settings stay on this device and are not backed up.</string>
     <string name="lock_recovery_info">With phone authentication disabled, forgetting your HourLog code cannot be bypassed. Keep a backup of your hours.</string>
     <string name="device_unavailable">Set up a screen lock in Android settings first.</string>
     <string name="invalid_credential">Authentication failed. Try again.</string>
@@ -170,4 +166,17 @@
     <string name="github_releases">Open GitHub releases</string>
     <string name="add_obtainium">Add HourLog to Obtainium</string>
     <string name="continue_action">Continue</string>
+    <string name="lock_delay">Delay</string>
+    <string name="delay_unit">Unit</string>
+    <string name="seconds_unit">Seconds</string>
+    <string name="minutes_unit">Minutes</string>
+    <string name="hours_unit">Hours</string>
+    <string name="lock_delay_hint">0 locks immediately. Choose any duration up to 24 hours.</string>
+    <string name="invalid_lock_delay">Enter a whole number giving a delay from 0 to 24 hours.</string>
+    <string name="keep_credential">Leave the new code fields empty to keep your current code.</string>
+    <string name="dont_show_again">Do not show this message again</string>
+    <string name="show_update_notice">Show update confirmation again</string>
+    <string name="choose_reminder_day">Choose a day</string>
+    <string name="choose_reminder_time">Choose a time</string>
+    <string name="reminder_required">Choose the reminder day and time before saving.</string>
 </resources>

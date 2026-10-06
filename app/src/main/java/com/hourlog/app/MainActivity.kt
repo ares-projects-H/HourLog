@@ -15,6 +15,9 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.compose.runtime.mutableIntStateOf
 import com.hourlog.app.ui.*
 import java.io.File
+import androidx.lifecycle.lifecycleScope
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.flow.collect
 
 class MainActivity : FragmentActivity() {
     private val weekRequest = mutableIntStateOf(0)
@@ -41,7 +44,8 @@ class MainActivity : FragmentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
-        if (security.settings.value.mode != com.hourlog.app.security.LockMode.NONE) window.addFlags(android.view.WindowManager.LayoutParams.FLAG_SECURE)
+        applyCaptureProtection(security.locked.value)
+        lifecycleScope.launch { security.locked.collect(::applyCaptureProtection) }
         savedInstanceState?.getString("export_path")?.let { path ->
             val file = File(path)
             if (file.canonicalFile.parentFile == File(cacheDir,"exports").canonicalFile)
@@ -49,6 +53,11 @@ class MainActivity : FragmentActivity() {
         }
         if (intent.getBooleanExtra("open_week", false)) weekRequest.intValue++
         setContent { SecurityHost(weekRequest.intValue) }
+    }
+    private fun applyCaptureProtection(locked: Boolean) {
+        if (locked) window.addFlags(android.view.WindowManager.LayoutParams.FLAG_SECURE)
+        else window.clearFlags(android.view.WindowManager.LayoutParams.FLAG_SECURE)
+        if (Build.VERSION.SDK_INT >= 33) setRecentsScreenshotEnabled(!locked)
     }
     override fun onStart() { super.onStart(); security.onForeground() }
     override fun onStop() {

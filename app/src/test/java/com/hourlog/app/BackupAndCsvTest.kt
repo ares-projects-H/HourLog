@@ -12,7 +12,7 @@ class BackupAndCsvTest {
     private fun entry(note: String = "Formation") = WorkEntry(date = day,
         start = day.atTime(6,30).toInstant(ZoneOffset.UTC), end = day.atTime(15,0).toInstant(ZoneOffset.UTC),
         zoneId = "UTC", note = note, breaks = listOf(WorkBreak(minutes = 30, paid = false)))
-    private fun backup() = Backup(entries = listOf(entry()), preferences = Preferences(hourlyRate = BigDecimal("40.00"), overtimeThresholdMinutes = 2250, reminderEnabled = true))
+    private fun backup() = Backup(entries = listOf(entry()), preferences = Preferences(hourlyRate = BigDecimal("40.00"), overtimeThresholdMinutes = 2250, reminderEnabled = true,reminderDay=2,reminderHour=9,reminderMinute=10))
     @Test fun backupRoundTrip() { val original = backup(); assertEquals(original, BackupCodec.decode(BackupCodec.encode(original))) }
     @Test fun preferencesRoundTrip() { val p = backup().preferences; assertEquals(p, BackupCodec.decodePreferences(BackupCodec.encodePreferences(p))) }
     @Test(expected = IllegalArgumentException::class) fun futureVersionRejected() { BackupCodec.decode(BackupCodec.encode(backup()).replace("\"version\": 1", "\"version\": 2")) }

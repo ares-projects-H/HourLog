@@ -10,6 +10,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.hourlog.app.R
@@ -48,11 +49,13 @@ fun dateLabel(date: LocalDate): String = date.format(DateTimeFormatter.ofLocaliz
 }
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable fun TimeDialog(initial: LocalTime, onTime: (LocalTime) -> Unit, onDismiss: () -> Unit) {
+    val keyboard = LocalSoftwareKeyboardController.current
+    val close = { keyboard?.hide(); onDismiss() }
     val state = rememberTimePickerState(initial.hour, initial.minute, DateFormat.is24HourFormat(LocalContext.current))
-    AlertDialog(onDismissRequest = onDismiss, title = { Text(stringResource(R.string.select_time)) },
+    AlertDialog(onDismissRequest = close, title = { Text(stringResource(R.string.select_time)) },
         text = { TimeInput(state) },
-        confirmButton = { TextButton(onClick = { onTime(LocalTime.of(state.hour, state.minute)); onDismiss() }) { Text(stringResource(R.string.save)) } },
-        dismissButton = { TextButton(onClick = onDismiss) { Text(stringResource(R.string.cancel)) } })
+        confirmButton = { TextButton(onClick = { onTime(LocalTime.of(state.hour, state.minute)); close() }) { Text(stringResource(R.string.save)) } },
+        dismissButton = { TextButton(onClick = close) { Text(stringResource(R.string.cancel)) } })
 }
 @Composable fun <T> Choice(label: String, value: T, options: List<Pair<T, Int>>, onValue: (T) -> Unit) {
     var expanded by remember { mutableStateOf(false) }

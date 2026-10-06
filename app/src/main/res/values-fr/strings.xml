@@ -79,7 +79,6 @@
     <string name="friday">Vendredi</string>
     <string name="saturday">Samedi</string>
     <string name="sunday">Dimanche</string>
-    <string name="reminder_info">Vendredi à 15:30 par défaut. Android peut retarder les rappels pour économiser la batterie. Activez puis enregistrez pour demander la permission.</string>
     <string name="notification_channel">Heures hebdomadaires</string>
     <string name="reminder_title">Résumé de tes heures</string>
     <string name="reminder_body">Tu as enregistré %1$s depuis lundi. Vérifie que toutes tes heures sont entrées.</string>
@@ -145,11 +144,8 @@
     <string name="password_rule">De 8 à 128 caractères. Saisissez et confirmez votre nouveau mot de passe.</string>
     <string name="device_fallback">Autoriser aussi la biométrie / le verrou du téléphone</string>
     <string name="auto_lock">Verrouiller après avoir quitté l’app</string>
-    <string name="lock_immediately">Immédiatement</string>
-    <string name="lock_30s">Après 30 secondes</string>
-    <string name="lock_2min">Après 2 minutes</string>
     <string name="lock_now">Verrouiller maintenant</string>
-    <string name="lock_info">Le verrou masque les heures et salaires, bloque les captures d’écran et masque les totaux dans les notifications. Ses réglages restent sur cet appareil et ne sont jamais inclus dans les sauvegardes.</string>
+    <string name="lock_info">Le verrou masque les heures et salaires quand l’app est verrouillée. Les captures et la recherche à l’écran sont autorisées après déverrouillage ; la saisie des codes reste protégée. Les notifications masquent les totaux. Les réglages du verrou restent sur cet appareil, hors sauvegardes.</string>
     <string name="lock_recovery_info">Si l’authentification du téléphone est désactivée, un code HourLog oublié ne peut pas être contourné. Conservez une sauvegarde de vos heures.</string>
     <string name="device_unavailable">Configurez d’abord le verrouillage de l’écran dans les paramètres Android.</string>
     <string name="invalid_credential">Échec de l’authentification. Réessayez.</string>
@@ -173,4 +169,17 @@
     <string name="github_releases">Ouvrir les versions GitHub</string>
     <string name="add_obtainium">Ajouter HourLog à Obtainium</string>
     <string name="continue_action">Continuer</string>
+    <string name="lock_delay">Délai</string>
+    <string name="delay_unit">Unité</string>
+    <string name="seconds_unit">Secondes</string>
+    <string name="minutes_unit">Minutes</string>
+    <string name="hours_unit">Heures</string>
+    <string name="lock_delay_hint">0 verrouille immédiatement. Choisissez une durée jusqu’à 24 heures.</string>
+    <string name="invalid_lock_delay">Saisissez un nombre entier donnant un délai de 0 à 24 heures.</string>
+    <string name="keep_credential">Laissez les nouveaux champs de code vides pour conserver le code actuel.</string>
+    <string name="dont_show_again">Ne plus afficher ce message</string>
+    <string name="show_update_notice">Réafficher la confirmation des mises à jour</string>
+    <string name="choose_reminder_day">Choisir un jour</string>
+    <string name="choose_reminder_time">Choisir une heure</string>
+    <string name="reminder_required">Choisissez le jour et l’heure du rappel avant d’enregistrer.</string>
 </resources>

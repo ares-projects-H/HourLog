@@ -4,7 +4,7 @@ Nom de l’application et du projet : **HourLog**. Package : `com.hourlog.app`. 
 
 ## Installer l’APK livré
 
-1. Téléchargez `HourLog-v1.1.0.apk` depuis [la release GitHub](https://github.com/ares-projects-H/HourLog/releases/latest), ou transférez-le depuis le dossier local `artifacts/v1.1.0`.
+1. Téléchargez `HourLog-v1.2.0.apk` depuis [la release GitHub](https://github.com/ares-projects-H/HourLog/releases/latest), ou transférez-le depuis le dossier local `artifacts/v1.2.0`.
 2. Ouvrez le fichier et autorisez l’installation depuis votre gestionnaire de fichiers si Android le demande.
 3. Ouvrez HourLog. Dans Paramètres, saisissez votre taux horaire et vérifiez le seuil hebdomadaire, le multiplicateur et la devise.
 4. Activez le rappel et enregistrez les paramètres pour accorder la permission de notification.
@@ -64,13 +64,13 @@ Dans **Paramètres → Protection**, choisissez le code PIN personnel (6–12 ch
 
 Vous pouvez permettre l’authentification du téléphone en secours du code personnel. Conservez votre code : il n’existe pas de réinitialisation distante. Les sauvegardes d’heures n’incluent pas le verrou et ne le désactivent pas lors d’une restauration. Les fichiers exportés ne sont pas chiffrés. Le verrou protège l’accès à l’interface ; la base reste dans le stockage privé Android.
 
-Choisissez le verrouillage immédiat, après 30 secondes ou après deux minutes en arrière-plan. Un démarrage à froid est toujours verrouillé. Les captures sont bloquées quand la protection est active et les rappels masquent les totaux.
+Saisissez un délai personnalisé en secondes, minutes ou heures, jusqu’à 24 heures. 0 verrouille immédiatement. Vous pouvez modifier le délai en laissant les nouveaux champs de code vides pour conserver votre PIN ou mot de passe actuel ; le code actuel reste demandé. Un démarrage à froid est toujours verrouillé. Les captures et l’aperçu sont autorisés après déverrouillage ; l’écran verrouillé et les champs de code restent protégés. Circle to Search peut ainsi accéder à l’écran sur un téléphone compatible. Les rappels masquent les totaux lorsque la protection est configurée.
 
 Dans **Paramètres → Couleur**, choisissez une palette ou saisissez six caractères hexadécimaux, puis **Enregistrer**. Le bouton de couleur par défaut restaure le vert d’origine. Le mode clair/sombre reste indépendant.
 
 ## Mises à jour
 
-Depuis la version 1.1.0 : **Paramètres → Mises à jour → Vérifier**, puis télécharger et installer. Android peut demander d’autoriser les installations depuis HourLog ; revenez ensuite dans l’application et appuyez à nouveau sur Installer. L’installation reste confirmée par Android. Le contrôle se fait uniquement à votre demande et ne transmet aucun horaire ni salaire. Une connexion Internet est nécessaire pour contacter GitHub.
+Depuis la version 1.1.0 : **Paramètres → Mises à jour → Vérifier**, puis télécharger et installer. Android peut demander d’autoriser les installations depuis HourLog ; revenez ensuite dans l’application et appuyez à nouveau sur Installer. L’installation reste confirmée par Android. Cochez **Ne plus afficher ce message** puis **Continuer** pour mémoriser ce choix. La confirmation ne sera plus affichée, même après fermeture de l’app. Annuler ne mémorise pas la case. Le bouton **Réafficher la confirmation des mises à jour** permet de revenir au fonctionnement initial. Le contrôle se fait uniquement à votre demande et ne transmet aucun horaire ni salaire. Une connexion Internet est nécessaire pour contacter GitHub.
 
 Pour Obtainium, ajoutez ce dépôt :
 
@@ -79,3 +79,7 @@ https://github.com/ares-projects-H/HourLog
 ```
 
 Le raccourci intégré peut aussi l’ajouter à Obtainium si celui-ci est installé. Les futures releases conserveront le même package et doivent conserver le même certificat pour remplacer votre installation. Évitez les APK temporaires de CI : leur clé peut être différente.
+
+## Rappel hebdomadaire
+
+Le rappel est désactivé au départ, sans jour ni heure préchoisis. Activez le bouton, choisissez le jour puis l’heure et enregistrez. Aucun rappel ne peut être activé tant que ce choix est incomplet. Désactiver le bouton et enregistrer annule le rappel. La mise à jour conserve les horaires déjà activés ; l’ancien vendredi 15:30 désactivé par défaut est retiré. Les sauvegardes récentes contenant un rappel non configuré doivent être importées avec HourLog 1.2.0 ou plus récent.

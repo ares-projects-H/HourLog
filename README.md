@@ -13,10 +13,10 @@ Built with Kotlin, Jetpack Compose, Material 3, Room, ViewModel, DataStore and W
 - Copy the previous day with new IDs, validation and overlap confirmation.
 - Configurable weekly overtime threshold (initially 40 hours), multiplier (1.5×), hourly rate and ISO currency (CAD initially).
 - Hours/minutes or localized decimal display, light/dark/system appearance, five accent presets and custom hex colors.
-- Optional custom PIN/password or system biometric/device credential lock, background timeout and protected screen capture.
+- Optional custom PIN/password or system biometric/device credential lock, custom background delay, and protected capture while locked.
 - Manual GitHub update checking, verified APK downloads and Android installation confirmation; Obtainium shortcut.
 - Adaptive launcher icon with a full green background.
-- Optional weekly reminder, initially Friday 15:30, opening the current week.
+- Optional weekly reminder, disabled initially with no day/time preselected; choose a schedule to open the current week.
 - Detailed CSV, weekly CSV and paginated PDF for a week, several weeks or any date range.
 - Android document picker for saving, Android share sheet for sharing, and validated/versioned JSON backup and restore.
 
@@ -61,7 +61,7 @@ Unit test reports: `app/build/reports/tests/testDebugUnitTest/index.html`. Lint:
 
 ### Release signing
 
-**Published 1.1.x builds retain the original local development certificate to update the existing 1.0.0 installation without uninstalling or losing data.** The signing key is not in GitHub or CI. Preserve that exact key for future updates; a newly generated key cannot replace an installed APK. This distribution is development-signed, not a Play Store release.
+**Published 1.1.0 and 1.2.0 builds retain the original local development certificate to update the existing 1.0.0 installation without uninstalling or losing data.** The signing key is not in GitHub or CI. Preserve that exact key for future updates; a newly generated key cannot replace an installed APK. This distribution is development-signed, not a Play Store release.
 
 For a separate fresh installation/distribution, generate a private signing key locally, outside the repository. `keytool` asks for passwords interactively:
 
@@ -126,7 +126,7 @@ JSON identifies `application: "HourLog"`, `version: 1`, a UTC creation timestamp
 
 Restoring replaces all periods, breaks and preferences. Room replaces entries and writes a preference recovery record in one transaction; DataStore is then synchronized. The recovery record remains authoritative until synchronization succeeds, including after a process interruption. Startup finishes pending preference recovery. Cancelling the preview changes nothing.
 
-Backup files are plain JSON. Protect them like other documents containing work and salary information. The backup export/import limit is 10 MiB. Backups are manual and can be placed in any user-selected document location. The app does not send them automatically.
+Backup files are plain JSON. Protect them like other documents containing work and salary information. Version 1 backups now include an optional `reminderScheduleChosen` marker. Unselected schedule fields are day 0 and hour/minute -1; enabled reminders require a valid schedule. Older HourLog versions can reject backups containing those unselected fields, so use 1.2.0 or newer to restore a new backup. The backup export/import limit is 10 MiB. Backups are manual and can be placed in any user-selected document location. The app does not send them automatically.
 
 ### Exports
 
@@ -136,7 +136,7 @@ Files are prepared in the app cache, then saved using Android’s Storage Access
 
 ## Notifications and permissions
 
-Reminders are initially disabled so the first launch does not request permission. Enable the reminder and save settings to request `POST_NOTIFICATIONS` on Android 13+. The notification channel can also be disabled in Android settings.
+Reminders are initially disabled so the first launch does not request permission. Enable the reminder and save settings to request `POST_NOTIFICATIONS` on Android 13+. Choose the day and time before enabling and saving a reminder; there is no preselected schedule. Existing enabled reminders survive the 1.2.0 upgrade. The former disabled Friday 15:30 placeholder is cleared, while customized disabled schedules are kept. The notification channel can also be disabled in Android settings.
 
 WorkManager persists scheduled work through process exit and reboot. It calculates the next local calendar occurrence each time and reschedules after system time/time-zone changes. Reminder delivery is **best effort**, not an exact alarm: Doze, battery restrictions, OEM policies or a powered-off phone can delay it. Missed reminders from an earlier date are skipped. Android force-stop prevents background work until the app is opened again. The app requests no exact-alarm permission.
 
@@ -155,15 +155,15 @@ The merged manifest includes WorkManager’s wake-lock, network-state, foregroun
 
 ### App lock
 
-Choose a 6–12 digit PIN, an 8–128 character password, or Android biometric/device authentication in Settings → Protection. A custom credential can optionally use the phone credential as a fallback. Android 11+ uses the system biometric prompt; Android 8–10 uses device credential confirmation. Biometrics depend on enrolled, supported hardware. Lock immediately when leaving the app, after 30 seconds, or after two minutes; a cold process always starts locked.
+Choose a 6–12 digit PIN, an 8–128 character password, or Android biometric/device authentication in Settings → Protection. A custom credential can optionally use the phone credential as a fallback. Android 11+ uses the system biometric prompt; Android 8–10 uses device credential confirmation. Biometrics depend on enrolled, supported hardware. Enter a custom delay in seconds, minutes or hours (up to 24 hours); 0 locks immediately. Background expiry locks the session; a cold process always starts locked. Changing the delay can retain the existing PIN/password, with the current credential required.
 
-Custom credentials use salted PBKDF2-HMAC-SHA256 (210,000 iterations); the verifier and settings are AES-GCM encrypted with an Android Keystore key. Five wrong attempts trigger a persistent cooldown, increasing up to 15 minutes. Changes/removal require the existing credential. Protected screens block screenshots/recents captures and reminders omit totals.
+Custom credentials use salted PBKDF2-HMAC-SHA256 (210,000 iterations); the verifier and settings are AES-GCM encrypted with an Android Keystore key. Five wrong attempts trigger a persistent cooldown, increasing up to 15 minutes. Changes/removal require the existing credential. The locked screen and credential-entry dialogs block screenshots/recents captures. Once unlocked, previews, screenshots and screen search are allowed; Circle to Search availability depends on the phone. Reminders omit totals whenever an app lock is configured.
 
 This protects access through the app UI. The Room database remains in Android private app storage and is **not separately encrypted by this feature**. Manual exported JSON/CSV/PDF files are plain documents and need their own protection. Lock settings and verifiers are excluded from HourLog backups; restoring time data does not disable the device lock. There is no remote reset: retain your credential, enable phone fallback if desired, and keep private backups. Clearing app data/uninstalling erases entries.
 
 ### Updates and Obtainium
 
-Install [the latest APK](https://github.com/ares-projects-H/HourLog/releases/latest) over the previous version. From 1.1.0 onward use Settings → Updates → Check for updates, then download/install. Nothing checks in the background. Downloads require a matching SHA-256 from the release, the same package and signing certificate, and a higher version code. Android performs the final installation and preserves app data. Allow installation from HourLog if prompted, then tap Install again.
+Install [the latest APK](https://github.com/ares-projects-H/HourLog/releases/latest) over the previous version. From 1.1.0 onward use Settings → Updates → Check for updates, then download/install. The confirmation dialog has a persistent “Do not show this message again” checkbox; checking it and continuing skips future notices. Cancelling does not save that choice. A button can restore the confirmation. Nothing checks in the background. Downloads require a matching SHA-256 from the release, the same package and signing certificate, and a higher version code. Android performs the final installation and preserves app data. Allow installation from HourLog if prompted, then tap Install again.
 
 Alternatively add `https://github.com/ares-projects-H/HourLog` to [Obtainium](https://github.com/ImranR98/Obtainium), or use the in-app shortcut. Each stable GitHub release has one installable `HourLog-vX.Y.Z.apk` and `SHA256SUMS`. See [maintainer release instructions](docs/RELEASING.md).
 

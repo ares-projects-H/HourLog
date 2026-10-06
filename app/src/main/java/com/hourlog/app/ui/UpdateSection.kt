@@ -13,6 +13,10 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.foundation.selection.toggleable
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
@@ -30,8 +34,13 @@ class UpdateViewModel(application: Application): AndroidViewModel(application) {
     private val client = UpdateClient(application)
     private val _state = MutableStateFlow(UpdateState())
     val state = _state.asStateFlow()
-    fun check() {
+    private val noticeStore = UpdateNoticeStore(application)
+    private val _noticeHidden = MutableStateFlow(noticeStore.hidden)
+    val noticeHidden = _noticeHidden.asStateFlow()
+    fun showNoticeAgain() { noticeStore.setHidden(false); _noticeHidden.value = false }
+    fun check(hideFutureNotice: Boolean = false) {
         if(_state.value.busy) return
+        if(hideFutureNotice) { noticeStore.setHidden(true); _noticeHidden.value = true }
         _state.value = UpdateState(busy = true)
         viewModelScope.launch {
             try { _state.value = UpdateState(checked = true,release = withContext(Dispatchers.IO) { client.latest() }) }
@@ -56,12 +65,15 @@ class UpdateViewModel(application: Application): AndroidViewModel(application) {
 @Composable fun UpdateSection(vm: UpdateViewModel = viewModel()) {
     val context = LocalContext.current
     val state by vm.state.collectAsStateWithLifecycle()
-    var allowNetwork by remember { mutableStateOf(false) }
+    val noticeHidden by vm.noticeHidden.collectAsStateWithLifecycle()
+    var allowNetwork by rememberSaveable { mutableStateOf(false) }
+    var dontShowAgain by rememberSaveable { mutableStateOf(false) }
     Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
         Text(stringResource(R.string.updates), style = MaterialTheme.typography.titleLarge)
         Text(stringResource(R.string.app_version,BuildConfig.VERSION_NAME))
-        Text(stringResource(R.string.update_privacy), style = MaterialTheme.typography.bodySmall)
-        OutlinedButton(enabled = !state.busy,onClick = { allowNetwork = true },modifier = Modifier.fillMaxWidth()) { Text(stringResource(R.string.check_updates)) }
+        if(!noticeHidden) Text(stringResource(R.string.update_privacy), style = MaterialTheme.typography.bodySmall)
+        OutlinedButton(enabled = !state.busy,onClick = { if(noticeHidden) vm.check() else { dontShowAgain = false; allowNetwork = true } },modifier = Modifier.fillMaxWidth()) { Text(stringResource(R.string.check_updates)) }
+        if(noticeHidden) TextButton(onClick = vm::showNoticeAgain) { Text(stringResource(R.string.show_update_notice)) }
         if(state.busy) LinearProgressIndicator(Modifier.fillMaxWidth())
         if(state.checked && state.release == null) Text(stringResource(R.string.up_to_date))
         if(state.error) Text(stringResource(R.string.update_error),color = MaterialTheme.colorScheme.error)
@@ -88,7 +100,15 @@ class UpdateViewModel(application: Application): AndroidViewModel(application) {
         },modifier = Modifier.fillMaxWidth()) { Text(stringResource(R.string.add_obtainium)) }
     }
     if(allowNetwork) AlertDialog(onDismissRequest = { allowNetwork = false },title = { Text(stringResource(R.string.check_updates)) },
-        text = { Text(stringResource(R.string.update_privacy)) },
-        confirmButton = { TextButton(onClick = { allowNetwork = false; vm.check() }) { Text(stringResource(R.string.continue_action)) } },
+        text = {
+            Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                Text(stringResource(R.string.update_privacy))
+                Row(Modifier.fillMaxWidth().toggleable(dontShowAgain,role = Role.Checkbox,onValueChange = { dontShowAgain = it }), verticalAlignment = Alignment.CenterVertically) {
+                    Checkbox(checked = dontShowAgain,onCheckedChange = null)
+                    Text(stringResource(R.string.dont_show_again),Modifier.weight(1f))
+                }
+            }
+        },
+        confirmButton = { TextButton(onClick = { allowNetwork = false; vm.check(dontShowAgain) }) { Text(stringResource(R.string.continue_action)) } },
         dismissButton = { TextButton(onClick = { allowNetwork = false }) { Text(stringResource(R.string.cancel)) } })
 }

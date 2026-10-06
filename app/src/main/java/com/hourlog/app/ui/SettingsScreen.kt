@@ -44,6 +44,7 @@ val dayChoices = listOf(1 to R.string.monday, 2 to R.string.tuesday, 3 to R.stri
     var minute by rememberSaveable(p.reminderMinute) { mutableIntStateOf(p.reminderMinute) }
     var timePicker by remember { mutableStateOf(false) }
     var error by remember { mutableStateOf(false) }
+    var reminderMissing by remember { mutableStateOf(false) }
     var denied by remember { mutableStateOf(false) }
     var rangeKind by remember { mutableStateOf<ExportKind?>(null) }
     val context = LocalContext.current
@@ -74,15 +75,21 @@ val dayChoices = listOf(1 to R.string.monday, 2 to R.string.tuesday, 3 to R.stri
         item { Text(stringResource(R.string.gross_disclaimer), style = MaterialTheme.typography.bodySmall) }
         item { HorizontalDivider(); Text(stringResource(R.string.notifications), style = MaterialTheme.typography.titleLarge) }
         item { Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
-            Text(stringResource(R.string.reminder_enabled), Modifier.weight(1f)); Switch(enabled, { enabled = it })
+            Text(stringResource(R.string.reminder_enabled), Modifier.weight(1f)); Switch(enabled, { enabled = it; reminderMissing = false })
         } }
-        item { Choice(stringResource(R.string.reminder_day), reminderDay, dayChoices) { reminderDay = it } }
-        item { OutlinedButton(onClick = { timePicker = true }) { Text("${stringResource(R.string.reminder_time)}: ${timeLabel(LocalTime.of(hour, minute))}") } }
-        item { Text(stringResource(R.string.reminder_info), style = MaterialTheme.typography.bodySmall) }
+        if (enabled) {
+            item { Choice(stringResource(R.string.reminder_day), reminderDay, listOf(0 to R.string.choose_reminder_day) + dayChoices) { reminderDay = it; reminderMissing = false } }
+            item { OutlinedButton(onClick = { timePicker = true }) {
+                Text(if(hour < 0) stringResource(R.string.choose_reminder_time) else "${stringResource(R.string.reminder_time)}: ${timeLabel(LocalTime.of(hour, minute))}")
+            } }
+        }
+        if (reminderMissing) item { Text(stringResource(R.string.reminder_required), color = MaterialTheme.colorScheme.error) }
         if (denied) item { Text(stringResource(R.string.notification_denied), color = MaterialTheme.colorScheme.error) }
         if (error) item { Text(stringResource(R.string.invalid_settings), color = MaterialTheme.colorScheme.error) }
         item { Button(enabled = !busy, modifier = Modifier.fillMaxWidth(), onClick = {
             try {
+                if (enabled && (reminderDay == 0 || hour < 0)) { reminderMissing = true; return@Button }
+                reminderMissing = false
                 fun decimal(s: String) = BigDecimal(s.trim().replace(',', '.'))
                 val thresholdNumber = decimal(threshold).multiply(BigDecimal(60)).setScale(0, java.math.RoundingMode.HALF_UP)
                 // Tolerate the displayed repeating fraction only when it resolves to the existing exact minute count.
@@ -111,7 +118,7 @@ val dayChoices = listOf(1 to R.string.monday, 2 to R.string.tuesday, 3 to R.stri
         item { OutlinedButton(enabled = !busy, onClick = { (context as com.hourlog.app.MainActivity).openBackup() }, modifier = Modifier.fillMaxWidth()) { Text(stringResource(R.string.restore)) } }
         item { Text(stringResource(R.string.privacy), style = MaterialTheme.typography.bodySmall) }
     }
-    if (timePicker) TimeDialog(LocalTime.of(hour, minute), { hour = it.hour; minute = it.minute }, { timePicker = false })
+    if (timePicker) TimeDialog(if(hour < 0) LocalTime.now().withSecond(0).withNano(0) else LocalTime.of(hour, minute), { hour = it.hour; minute = it.minute; reminderMissing = false }, { timePicker = false })
     if (rangeKind != null) RangeDialog(state.entries, { start, end -> vm.export(rangeKind!!, start, end); rangeKind = null }, { rangeKind = null })
 }
 
