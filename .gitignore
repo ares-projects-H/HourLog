@@ -1,0 +1,14 @@
+.gradle/
+.kotlin/
+.build-cache/
+**/build/
+local.properties
+*.jks
+*.keystore
+keystore.properties
+.idea/
+*.iml
+.DS_Store
+artifacts/
+
+.emulator/
