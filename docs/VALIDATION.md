@@ -9,6 +9,9 @@ Package `com.hourlog.app`, version 1.2.1/code 4. See [REVIEW-2026-10-06.md](REVI
 - The code-3 update client accepted the signed code-4 APK as a newer version with the same certificate.
 - Installation over the actual published optimized 1.2.0 APK passed without uninstall; entries, settings and the same scheduled work ID survived installation and an actual emulator reboot. The framework-only ReleaseProbe verified both optimized versions.
 - APK certificate SHA-256 matches the original: `bf4859e17b1670255f80d3247fc41842f976b5aee2eb493d9aa7bedd574ae5e4`.
+- GitHub Actions passed for release source commit `b479008` (unit tests, lint and debug/release builds).
+- Two public-update tests passed against published 1.2.1: current-version detection and actual APK download with checksum verification before same-version rejection.
+- The GitHub-downloaded APK matches published SHA256SUMS and the original signing certificate.
 - Capture verification covers unlocked app content and the configured reminder screen. Physical fingerprint hardware and Circle to Search were not exercised.
 
 Evidence is in ignored `artifacts/review-2026-10-06/` and `artifacts/v1.2.1/qa/`. The delivery APK is `artifacts/v1.2.1/HourLog-v1.2.1.apk`, accompanied by `SHA256SUMS`; signing material and local work-data fixtures are excluded from Git and release assets.
